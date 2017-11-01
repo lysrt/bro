@@ -33,8 +33,6 @@ func ParcourN(n *html.Node, depth int) {
 		p(depth, "-> %v \"%v\"\n", printNodeType(current.Type), current.Data)
 	}
 
-	//p(depth, "namespace: %v\n", current.Namespace) // Unused
-
 	if current.FirstChild != nil {
 		ParcourN(current.FirstChild, depth+1)
 	}

@@ -11,14 +11,16 @@ import (
 
 func main() {
 	htmlIn := flag.String("h", "in.html", "-h in.html")
-	// cssIn := flag.String("c", "in.css", "-c in.css")
+	cssIn := flag.String("c", "in.css", "-c in.css")
 	// output := flag.String("o", "out", "-o out")
 	flag.Parse()
 
-	parseHTML(*htmlIn)
+	dom := parseHTML(*htmlIn)
 
-	// css := parseCSS(*cssIn)
-	// layout := generateLayout(dom, css)
+	css := parseCSS(*cssIn)
+
+	/*layout := */
+	generateLayout(dom, css)
 
 	// writeOutput(*output, layout)
 }
@@ -28,7 +30,6 @@ func parseHTML(inputFileName string) *html.Node {
 	if err != nil {
 		log.Fatalf("cannot parse HTML file: %q", err)
 	}
-	// fmt.Printf("DOM: %v\n", dom)
 
 	Parcour(n)
 
@@ -36,14 +37,11 @@ func parseHTML(inputFileName string) *html.Node {
 }
 
 func parseCSS(inputFileName string) *CSS {
-	cssParser, err := newCSSParser(inputFileName)
-	if err != nil {
-		log.Fatalf("cannot read CSS file: %q", err)
-	}
-	css, err := cssParser.Parse()
+	css, err := ParseCSS(inputFileName)
 	if err != nil {
 		log.Fatalf("cannot parse CSS file: %q", err)
 	}
+
 	fmt.Printf("CSS: %v\n", css)
 
 	return css

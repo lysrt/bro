@@ -1,0 +1,16 @@
+body {
+    color: red;
+    font-size: 12px;
+}
+
+h1 {
+    font-weight: bold;
+}
+
+#title {
+    text-decoration: underline;
+}
+
+.item {
+    color: blue;
+}
