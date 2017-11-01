@@ -62,7 +62,7 @@ func (s Selector) String() string {
 func (s *Selector) Specificity() Specificity {
 	return Specificity{
 		A: len(s.ID),
-		B: len(s.Class),
+		B: len(s.Classes),
 		C: len(s.TagName),
 	}
 }
