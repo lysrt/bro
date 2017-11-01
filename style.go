@@ -19,12 +19,14 @@ func matches(n *html.Node, selector *Selector) bool {
 	if selector.ID != "" && selector.ID != NodeGetID(n) {
 		return false
 	}
-	if selector.Class != nil {
-		for _, c := range NodeGetClasses(n) {
-			if selector.Class[0] == c {
-				return true
+outer_loop:
+	for _, c := range selector.Class {
+		for _, cc := range NodeGetClasses(n) {
+			if c == cc {
+				continue outer_loop
 			}
 		}
+		return false
 	}
 	return true
 }
