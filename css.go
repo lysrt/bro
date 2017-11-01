@@ -24,6 +24,15 @@ type Selector struct {
 	Class   []string
 }
 
+// Specificity computes and returns the specificity of a selector.
+func (s *Selector) Specificity() Specificity {
+	return Specificity{
+		A: len(s.ID),
+		B: len(s.Class),
+		C: len(s.TagName),
+	}
+}
+
 // Declaration represents a single CSS property
 type Declaration struct {
 	name  string
@@ -53,7 +62,13 @@ const (
 
 type Color struct {
 	Name       string
-	A, R, G, B int
+	A, R, G, B uint8
+}
+
+// Specificity represents the specificity of a Rule.
+// It is use to compute rule precedence.
+type Specificity struct {
+	A, B, C int
 }
 
 func ParseCSS(inputFileName string) (*Stylesheet, error) {
