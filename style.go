@@ -13,16 +13,10 @@ type StyledNode struct {
 }
 
 func matches(n *html.Node, selector *Selector) bool {
-	if selector.TagName != "" {
-		if n.Data == selector.TagName {
-			return true
-		}
+	if selector.TagName != "" && n.Data != selector.TagName {
 		return false
 	}
-	if selector.ID != "" {
-		if selector.ID == NodeGetID(n) {
-			return true
-		}
+	if selector.ID != "" && selector.ID != NodeGetID(n) {
 		return false
 	}
 	if selector.Class != "" {
@@ -32,5 +26,5 @@ func matches(n *html.Node, selector *Selector) bool {
 			}
 		}
 	}
-	return false
+	return true
 }
