@@ -33,45 +33,59 @@ func matchRule(n *html.Node, r Rule) (m MatchedRule, ok bool) {
 	return
 }
 
-func specifiedValues(n *html.Node, r Rule) (m MatchedRule, ok bool) {
+// matchingRules returns all the matched rules for a node.
+func matchingRules(n *html.Node, stylesheet Stylesheet) []MatchedRule {
 	var matches []MatchedRule
-	for _, s := range r.Selectors {
-		if !matchSelector(n, s) {
+	for _, r := range stylesheet.Rules {
+		m, ok := matchRule(n, r)
+		if !ok {
 			continue
 		}
-		matches = append(matches, MatchedRule{
-			Rule:        r,
-			Specificity: s.Specificity(),
-		})
+		matches = append(matches, m)
 	}
-	if len(matches) == 0 {
-		return
+	return matches
+}
+
+// specifiedValues returns the apply properties of a node.
+func specifiedValues(n *html.Node, stylesheet Stylesheet) PropertyMap {
+	properties := make(PropertyMap)
+	rules := matchingRules(n, stylesheet)
+
+	// order from lowest to highest
+	for i := range rules {
+		for j := range rules[i:] {
+			speI := rules[i].Specificity
+			speJ := rules[j].Specificity
+			if speI.A > speJ.A {
+				continue
+			}
+			if speI.A < speJ.A {
+				rules[i], rules[j] = rules[j], rules[i]
+				continue
+			}
+			if speI.B > speJ.B {
+				continue
+			}
+			if speI.B < speJ.B {
+				rules[i], rules[j] = rules[j], rules[i]
+				continue
+			}
+			if speI.C > speJ.C {
+				continue
+			}
+			if speI.C < speJ.C {
+				rules[i], rules[j] = rules[j], rules[i]
+				continue
+			}
+		}
 	}
-	for _, match := range matches {
-		if match.Specificity.A < m.Specificity.A {
-			continue
-		}
-		if match.Specificity.A > m.Specificity.A {
-			m = match
-			continue
-		}
-		if match.Specificity.B < m.Specificity.B {
-			continue
-		}
-		if match.Specificity.B > m.Specificity.B {
-			m = match
-			continue
-		}
-		if match.Specificity.C < m.Specificity.C {
-			continue
-		}
-		if match.Specificity.C > m.Specificity.C {
-			m = match
-			continue
+	for _, r := range rules {
+		for _, d := range r.Rule.Declatations {
+			properties[d.name] = d.value
 		}
 	}
-	ok = true
-	return
+
+	return properties
 }
 
 // matchSelector matches a node with a selector.
