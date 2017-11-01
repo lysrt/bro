@@ -7,6 +7,28 @@ import (
 	"golang.org/x/net/html"
 )
 
+// NodeGetID extracts ID from a node.
+func NodeGetID(n *html.Node) string {
+	for _, attr := range n.Attr {
+		if attr.Key != "id" {
+			continue
+		}
+		return attr.Val
+	}
+	return ""
+}
+
+// NodeGetClasses extracts classes from a node.
+func NodeGetClasses(n *html.Node) []string {
+	for _, attr := range n.Attr {
+		if attr.Key != "class" {
+			continue
+		}
+		return strings.Fields(attr.Val)
+	}
+	return nil
+}
+
 func Parcour(n *html.Node) {
 	ParcourN(n, 0)
 }
