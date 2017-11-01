@@ -36,7 +36,7 @@ func parseHTML(inputFileName string) *html.Node {
 	return n
 }
 
-func parseCSS(inputFileName string) *CSS {
+func parseCSS(inputFileName string) *Stylesheet {
 	css, err := ParseCSS(inputFileName)
 	if err != nil {
 		log.Fatalf("cannot parse CSS file: %q", err)
@@ -47,7 +47,7 @@ func parseCSS(inputFileName string) *CSS {
 	return css
 }
 
-func generateLayout(dom *html.Node, css *CSS) []byte {
+func generateLayout(dom *html.Node, css *Stylesheet) []byte {
 	return []byte("")
 }
 
