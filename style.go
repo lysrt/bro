@@ -19,9 +19,9 @@ func matches(n *html.Node, selector *Selector) bool {
 	if selector.ID != "" && selector.ID != NodeGetID(n) {
 		return false
 	}
-	if selector.Class != "" {
+	if selector.Class != nil {
 		for _, c := range NodeGetClasses(n) {
-			if selector.Class == c {
+			if selector.Class[0] == c {
 				return true
 			}
 		}
