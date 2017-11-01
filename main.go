@@ -42,7 +42,7 @@ func parseCSS(inputFileName string) *Stylesheet {
 		log.Fatalf("cannot parse CSS file: %q", err)
 	}
 
-	//fmt.Printf("CSS: %v\n", css)
+	fmt.Println(css)
 
 	return css
 }

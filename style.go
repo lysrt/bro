@@ -25,9 +25,9 @@ func matches(n *html.Node, selector *Selector) bool {
 		}
 		return false
 	}
-	if selector.Class != nil {
+	if selector.Classes != nil {
 		for _, c := range NodeGetClasses(n) {
-			if selector.Class[0] == c {
+			if selector.Classes[0] == c {
 				return true
 			}
 		}
