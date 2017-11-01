@@ -20,6 +20,20 @@ type MatchedRule struct {
 
 // matchRule tries to match a rule to a node and return the most specifique one.
 func matchRule(n *html.Node, r Rule) (m MatchedRule, ok bool) {
+	for _, s := range r.Selectors {
+		if matchSelector(n, s) {
+			ok = true
+			m = MatchedRule{
+				Rule:        r,
+				Specificity: s.Specificity(),
+			}
+			return
+		}
+	}
+	return
+}
+
+func specifiedValues(n *html.Node, r Rule) (m MatchedRule, ok bool) {
 	var matches []MatchedRule
 	for _, s := range r.Selectors {
 		if !matchSelector(n, s) {
