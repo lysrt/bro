@@ -21,7 +21,7 @@ type Rule struct {
 type Selector struct {
 	TagName string
 	ID      string
-	Class   string
+	Class   []string
 }
 
 // Declaration represents a single CSS property
@@ -83,7 +83,7 @@ func parseRules(s *bufio.Scanner) []Rule {
 	fmt.Println("Parsing Rules")
 
 	var rules []Rule
-	for s.Scan() {
+	for s.Err() == nil {
 		rules = append(rules, parseRule(s))
 	}
 	if err := s.Err(); err != nil {
@@ -95,7 +95,7 @@ func parseRules(s *bufio.Scanner) []Rule {
 }
 
 func parseRule(s *bufio.Scanner) Rule {
-	fmt.Println("Parsing Rule")
+	fmt.Println("\tParsing Rule")
 	return Rule{
 		Selectors:    parseSelectors(s),
 		Declatations: parseDeclarations(s),
@@ -103,7 +103,7 @@ func parseRule(s *bufio.Scanner) Rule {
 }
 
 func parseSelectors(s *bufio.Scanner) []Selector {
-	fmt.Println("Parsing Selectors")
+	fmt.Println("\t\tParsing Selectors")
 
 	// Return when reading {
 	for s.Scan() {
@@ -117,7 +117,7 @@ func parseSelectors(s *bufio.Scanner) []Selector {
 }
 
 func parseDeclarations(s *bufio.Scanner) []Declaration {
-	fmt.Println("Parsing Declarations")
+	fmt.Println("\t\tParsing Declarations")
 
 	// Return when reading }
 	for s.Scan() {
