@@ -31,23 +31,23 @@ func parseHTML(inputFileName string) *html.Node {
 		log.Fatalf("cannot parse HTML file: %q", err)
 	}
 
-	Parcour(n)
+	//Parcour(n)
 
 	return n
 }
 
-func parseCSS(inputFileName string) *CSS {
+func parseCSS(inputFileName string) *Stylesheet {
 	css, err := ParseCSS(inputFileName)
 	if err != nil {
 		log.Fatalf("cannot parse CSS file: %q", err)
 	}
 
-	fmt.Printf("CSS: %v\n", css)
+	//fmt.Printf("CSS: %v\n", css)
 
 	return css
 }
 
-func generateLayout(dom *html.Node, css *CSS) []byte {
+func generateLayout(dom *html.Node, css *Stylesheet) []byte {
 	return []byte("")
 }
 

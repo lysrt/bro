@@ -1,7 +1,9 @@
 package main
 
 import (
-	"io/ioutil"
+	"bufio"
+	"fmt"
+	"os"
 )
 
 // Stylesheet represents a whole CSS file
@@ -11,7 +13,7 @@ type Stylesheet struct {
 
 // Rule represents a CSS block
 type Rule struct {
-	Selector     Selector
+	Selectors    []Selector
 	Declatations []Declaration
 }
 
@@ -55,18 +57,75 @@ type Color struct {
 }
 
 func ParseCSS(inputFileName string) (*Stylesheet, error) {
-	css, err := ioutil.ReadFile(inputFileName)
+	f, err := os.Open(inputFileName)
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 
-	sheet := &CSSParser{string(css)}
+	scanner := bufio.NewScanner(f)
+	scanner.Split(bufio.ScanWords)
+
+	sheet := parseStylesheet(scanner)
 
 	return sheet, nil
 }
 
-func parse()
+func parseStylesheet(s *bufio.Scanner) *Stylesheet {
+	fmt.Println("Parsing Stylesheet")
 
-func parseSimpleSelector(buffer) Selector {
+	return &Stylesheet{
+		Rules: parseRules(s),
+	}
+}
 
+func parseRules(s *bufio.Scanner) []Rule {
+	fmt.Println("Parsing Rules")
+
+	var rules []Rule
+	for s.Scan() {
+		rules = append(rules, parseRule(s))
+	}
+	if err := s.Err(); err != nil {
+		//return nil, fmt.Errorf("error reading css: %q", err)
+		fmt.Println("Error: ", err)
+		return nil
+	}
+	return rules
+}
+
+func parseRule(s *bufio.Scanner) Rule {
+	fmt.Println("Parsing Rule")
+	return Rule{
+		Selectors:    parseSelectors(s),
+		Declatations: parseDeclarations(s),
+	}
+}
+
+func parseSelectors(s *bufio.Scanner) []Selector {
+	fmt.Println("Parsing Selectors")
+
+	// Return when reading {
+	for s.Scan() {
+		text := s.Text()
+		fmt.Println("Scanning: ", text)
+		if text == "{" {
+			break
+		}
+	}
+	return nil
+}
+
+func parseDeclarations(s *bufio.Scanner) []Declaration {
+	fmt.Println("Parsing Declarations")
+
+	// Return when reading }
+	for s.Scan() {
+		text := s.Text()
+		fmt.Println("Scanning: ", text)
+		if text == "}" {
+			break
+		}
+	}
+	return nil
 }
