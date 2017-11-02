@@ -1,13 +1,18 @@
 package main
 
-import "text/scanner"
+import (
+	"text/scanner"
+	"unicode"
+)
 
+// Scanner is a wrapper around text/Scanner, adding conveninent methods
 type Scanner struct {
 	scanner.Scanner
 }
 
+// NextChar places the buffer before the next non-whitespace rune, and returns it
 func (s *Scanner) NextChar() rune {
-	for s.Peek() == rune(' ') || s.Peek() == rune('\t') || s.Peek() == rune('\r') || s.Peek() == rune('\n') {
+	for unicode.IsSpace(s.Peek()) {
 		s.Next()
 	}
 	return s.Peek()
