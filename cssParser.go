@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strconv"
 	"text/scanner"
 	"unicode"
 )
@@ -177,7 +178,36 @@ func parseLength(s *Scanner) Length {
 }
 
 func parseColor(s *Scanner) Color {
-	// TODO Implement #ABCDEF
-	s.Scan()
-	return Color{A: 255, R: 255, G: 0, B: 0}
+	if s.NextChar() == rune('#') {
+		s.Scan()
+		s.Scan()
+	}
+	text := s.TokenText()
+
+	color := Color{}
+	if len(text) == 3 {
+		color.A = 255
+		color.R = hexToUint8(string(text[0]) + string(text[0]))
+		color.G = hexToUint8(string(text[1]) + string(text[1]))
+		color.B = hexToUint8(string(text[2]) + string(text[2]))
+	} else if len(text) == 6 {
+		color.A = 255
+		color.R = hexToUint8(text[0:2])
+		color.G = hexToUint8(text[2:4])
+		color.B = hexToUint8(text[4:6])
+	} else if len(text) == 8 {
+		color.A = hexToUint8(text[0:2])
+		color.R = hexToUint8(text[2:4])
+		color.G = hexToUint8(text[4:6])
+		color.B = hexToUint8(text[6:8])
+	}
+	return color
+}
+
+func hexToUint8(hex string) uint8 {
+	val, err := strconv.ParseUint(hex, 16, 8)
+	if err != nil {
+		return 0
+	}
+	return uint8(val)
 }
