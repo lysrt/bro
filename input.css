@@ -1,6 +1,10 @@
 body, input {
     color: red;
-    font-size: 12px;
+    font-size: 1.5 em;
+    line-height: 24px;
+    border-color: black;
+    border-style: solid;
+    border-width: 1px
 }
 
 h1 {

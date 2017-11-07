@@ -170,13 +170,30 @@ func parseValue(s *parser.Scanner) Value {
 }
 
 func parseLength(s *parser.Scanner) Length {
-	// TODO Remove this and implement the correct logic
 	s.Scan()
+
+	value := s.TokenText()
+	f, err := strconv.ParseFloat(value, 32)
+	if err != nil {
+		f = 0
+	}
+
 	if s.NextChar() != rune(';') {
 		s.Scan()
 	}
 
-	return Length{Quantity: 66, Unit: Px}
+	t := s.TokenText()
+	var unit Unit
+	switch t {
+	case "px":
+		unit = Px
+	case "em":
+		unit = Em
+	case "%":
+		unit = Percent
+	}
+
+	return Length{Quantity: float32(f), Unit: unit}
 }
 
 func parseColor(s *parser.Scanner) Color {

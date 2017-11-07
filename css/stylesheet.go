@@ -11,7 +11,7 @@ type Stylesheet struct {
 }
 
 func (s Stylesheet) String() string {
-	r := "Spreadsheet\n"
+	r := "Stylesheet\n"
 	for _, rule := range s.Rules {
 		r += fmt.Sprint(rule)
 	}
