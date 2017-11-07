@@ -29,6 +29,50 @@ func NodeGetClasses(n *html.Node) []string {
 	return nil
 }
 
+// NodeFirstElementChild returns the first element child of the node.
+func NodeFirstElementChild(n *html.Node) *html.Node {
+	for e := n.FirstChild; e != nil; e = e.NextSibling {
+		if e.Type == html.TextNode {
+			continue
+		}
+		return e
+	}
+	return nil
+}
+
+// NodeLastElementChild returns the last element child of the node.
+func NodeLastElementChild(n *html.Node) *html.Node {
+	for e := n.LastChild; e != nil; e = e.PrevSibling {
+		if e.Type == html.TextNode {
+			continue
+		}
+		return e
+	}
+	return nil
+}
+
+// NodeNextElementSibling returns the next element sibling of the node.
+func NodeNextElementSibling(n *html.Node) *html.Node {
+	for e := n.NextSibling; e != nil; e = e.NextSibling {
+		if e.Type == html.TextNode {
+			continue
+		}
+		return e
+	}
+	return nil
+}
+
+// NodePrevElementSibling returns the previous element sibling of the node.
+func NodePrevElementSibling(n *html.Node) *html.Node {
+	for e := n.PrevSibling; e != nil; e = e.PrevSibling {
+		if e.Type == html.TextNode {
+			continue
+		}
+		return e
+	}
+	return nil
+}
+
 func Parcour(n *html.Node) {
 	ParcourN(n, 0)
 }
