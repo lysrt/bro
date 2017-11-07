@@ -18,6 +18,10 @@ type MatchedRule struct {
 	Specificity Specificity
 }
 
+func GenerateStyleTree(dom *html.Node, css *Stylesheet) (*StyledNode, error) {
+	return nil, nil
+}
+
 // matchRule tries to match a rule to a node and return the most specifique one.
 func matchRule(n *html.Node, r Rule) (m MatchedRule, ok bool) {
 	for _, s := range r.Selectors {
