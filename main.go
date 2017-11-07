@@ -7,6 +7,9 @@ import (
 	"image/png"
 	"log"
 	"os"
+
+	"github.com/lysrt/bro/css"
+	"github.com/lysrt/bro/dom"
 )
 
 func main() {
@@ -16,25 +19,25 @@ func main() {
 	flag.Parse()
 
 	// 1. Constructing the DOM tree
-	dom, err := ParseHTML(*htmlIn)
+	d, err := dom.ParseHTML(*htmlIn)
 	if err != nil {
 		log.Fatalf("cannot parse HTML file: %q", err)
 	}
 
 	// 2. Parsing the CSS to a *Stylesheet
-	var css *Stylesheet
+	var s *css.Stylesheet
 	if *cssIn != "" {
-		css, err = ParseCSS(*cssIn)
+		s, err = css.ParseCSS(*cssIn)
 		if err != nil {
 			log.Fatalf("cannot parse CSS file: %q", err)
 		}
 	}
 
-	Parcour(dom)
-	fmt.Println(css)
+	dom.Parcour(d)
+	fmt.Println(s)
 
 	// 3. Decorating the DOM to generate the Style Tree
-	styleTree, err := GenerateStyleTree(dom, css)
+	styleTree, err := GenerateStyleTree(d, s)
 	if err != nil {
 		log.Fatalf("cannot build style tree: %q", err)
 	}

@@ -1,10 +1,12 @@
-package main
+package css
 
 import (
 	"os"
 	"strconv"
 	"text/scanner"
 	"unicode"
+
+	"github.com/lysrt/bro/parser"
 )
 
 func ParseCSS(inputFileName string) (*Stylesheet, error) {
@@ -14,7 +16,7 @@ func ParseCSS(inputFileName string) (*Stylesheet, error) {
 	}
 	defer f.Close()
 
-	var s Scanner
+	var s parser.Scanner
 	s.Init(f)
 
 	sheet := parseStylesheet(&s)
@@ -22,13 +24,13 @@ func ParseCSS(inputFileName string) (*Stylesheet, error) {
 	return sheet, nil
 }
 
-func parseStylesheet(s *Scanner) *Stylesheet {
+func parseStylesheet(s *parser.Scanner) *Stylesheet {
 	return &Stylesheet{
 		Rules: parseRules(s),
 	}
 }
 
-func parseRules(s *Scanner) []Rule {
+func parseRules(s *parser.Scanner) []Rule {
 	var rules []Rule
 
 	for s.Peek() != scanner.EOF {
@@ -47,14 +49,14 @@ func parseRules(s *Scanner) []Rule {
 	return rules
 }
 
-func parseRule(s *Scanner) Rule {
+func parseRule(s *parser.Scanner) Rule {
 	return Rule{
 		Selectors:    parseSelectors(s),
 		Declarations: parseDeclarations(s),
 	}
 }
 
-func parseSelectors(s *Scanner) []Selector {
+func parseSelectors(s *parser.Scanner) []Selector {
 	var selectors []Selector
 
 	for s.Peek() != scanner.EOF {
@@ -72,7 +74,7 @@ func parseSelectors(s *Scanner) []Selector {
 	return selectors
 }
 
-func parseSelector(s *Scanner) Selector {
+func parseSelector(s *parser.Scanner) Selector {
 	selector := Selector{}
 
 	for s.Peek() != scanner.EOF {
@@ -97,7 +99,7 @@ func parseSelector(s *Scanner) Selector {
 	return selector
 }
 
-func parseDeclarations(s *Scanner) []Declaration {
+func parseDeclarations(s *parser.Scanner) []Declaration {
 	var declarations []Declaration
 
 	for s.Peek() != scanner.EOF {
@@ -114,7 +116,7 @@ func parseDeclarations(s *Scanner) []Declaration {
 	return declarations
 }
 
-func parseDeclaration(s *Scanner) Declaration {
+func parseDeclaration(s *parser.Scanner) Declaration {
 	identifier := parseIdentifier(s)
 	value := parseValue(s)
 
@@ -126,7 +128,7 @@ func parseDeclaration(s *Scanner) Declaration {
 	return d
 }
 
-func parseIdentifier(s *Scanner) string {
+func parseIdentifier(s *parser.Scanner) string {
 	name := ""
 	for s.Scan() != scanner.EOF {
 		if s.TokenText() == ":" || s.TokenText() == ";" {
@@ -137,7 +139,7 @@ func parseIdentifier(s *Scanner) string {
 	return name
 }
 
-func parseValue(s *Scanner) Value {
+func parseValue(s *parser.Scanner) Value {
 	v := Value{}
 
 	next := s.NextChar()
@@ -167,7 +169,7 @@ func parseValue(s *Scanner) Value {
 	return v
 }
 
-func parseLength(s *Scanner) Length {
+func parseLength(s *parser.Scanner) Length {
 	// TODO Remove this and implement the correct logic
 	s.Scan()
 	if s.NextChar() != rune(';') {
@@ -177,7 +179,7 @@ func parseLength(s *Scanner) Length {
 	return Length{Quantity: 66, Unit: Px}
 }
 
-func parseColor(s *Scanner) Color {
+func parseColor(s *parser.Scanner) Color {
 	if s.NextChar() == rune('#') {
 		s.Scan()
 		s.Scan()
