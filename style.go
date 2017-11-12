@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/lysrt/bro/css"
 	"github.com/lysrt/bro/dom"
 	"golang.org/x/net/html"
@@ -14,6 +16,37 @@ type StyledNode struct {
 	Node            *html.Node
 	SpecifiedValues PropertyMap
 	Children        []StyledNode
+}
+
+// Value returns the value of a CSS property if it exists
+func (node *StyledNode) Value(property string) (value css.Value, ok bool) {
+	value, ok = node.SpecifiedValues[property]
+	return
+}
+
+type Display string
+
+const (
+	Inline Display = "inline"
+	Block  Display = "block"
+	None   Display = "None"
+)
+
+// Display returns the type of CSS display of a StyledNode
+func (node *StyledNode) Display() Display {
+	value, ok := node.Value("display")
+	if !ok {
+		return Inline
+	}
+
+	switch strings.ToLower(value.Keyword) {
+	case "block":
+		return Block
+	case "none":
+		return None
+	default:
+		return Inline
+	}
 }
 
 // MatchedRule represents a matched rule with a given specificity.

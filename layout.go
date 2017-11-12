@@ -16,12 +16,12 @@ type EdgeSizes struct {
 	left, right, top, bottom float32
 }
 
-type BoxType int
+type BoxType string
 
 const (
-	BlockNode BoxType = iota
-	InlineNode
-	AnonymousBlock
+	BlockNode      BoxType = "block"
+	InlineNode             = "inline"
+	AnonymousBlock         = "anon"
 )
 
 type LayoutBox struct {
