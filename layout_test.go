@@ -1,14 +1,13 @@
 package main
 
 import (
-	"reflect"
+	"strings"
 	"testing"
-)
 
-var (
-	blockBoxes  *StyledNode
-	inlineBoxes *StyledNode
-	mixedBoxes  *StyledNode
+	"github.com/lysrt/bro/dom"
+
+	"github.com/lysrt/bro/css"
+	"golang.org/x/net/html"
 )
 
 var blockHTML = `<container>
@@ -24,11 +23,21 @@ var (
 	mixedCSS  = `a, d { display: block; } b, c { display: inline; }`
 )
 
-func init() {
-
-}
-
 func TestGenerateLayoutTree(t *testing.T) {
+	node, err := html.Parse(strings.NewReader(blockHTML))
+	if err != nil {
+		t.Fatal("fail to parse DOM:", err)
+	}
+	// go through ??? -> html -> body -> container
+	node = dom.NodeLastElementChild(node)
+	node = dom.NodeLastElementChild(node)
+	node = dom.NodeLastElementChild(node)
+	t.Log(node.Data)
+
+	blockStyle := css.ParseCSS(strings.NewReader(blockCSS))
+	inlineStyle := css.ParseCSS(strings.NewReader(blockCSS))
+	mixedStyle := css.ParseCSS(strings.NewReader(blockCSS))
+
 	type args struct {
 		styleTree *StyledNode
 	}
@@ -37,12 +46,61 @@ func TestGenerateLayoutTree(t *testing.T) {
 		args args
 		want *LayoutBox
 	}{
-	// TODO: Add test cases.
+		{
+			name: "Block Layout",
+			args: args{GenerateStyleTree(node, blockStyle)},
+			want: &LayoutBox{
+				boxType: BlockNode,
+				children: []*LayoutBox{
+					{boxType: BlockNode},
+					{boxType: BlockNode},
+					{boxType: BlockNode},
+					{boxType: BlockNode},
+				},
+			},
+		},
+		{
+			name: "Inline Layout",
+			args: args{GenerateStyleTree(node, inlineStyle)},
+			want: &LayoutBox{
+				boxType: BlockNode,
+				children: []*LayoutBox{
+					{boxType: InlineNode},
+					{boxType: InlineNode},
+					{boxType: InlineNode},
+					{boxType: InlineNode},
+				},
+			},
+		},
+		{
+			name: "Mixed Layout",
+			args: args{GenerateStyleTree(node, mixedStyle)},
+			want: &LayoutBox{
+				boxType: BlockNode,
+				children: []*LayoutBox{
+					{boxType: BlockNode},
+					{boxType: InlineNode},
+					{boxType: InlineNode},
+					{boxType: BlockNode},
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GenerateLayoutTree(tt.args.styleTree); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GenerateLayoutTree() = %v, want %v", got, tt.want)
+			want := tt.want
+			got := GenerateLayoutTree(tt.args.styleTree)
+			if got.boxType != want.boxType {
+				node := got.styledNode.Node.Data
+				t.Fatalf("node %q expects %q got %q", node, want.boxType, got.boxType)
+			}
+			for i := range got.children {
+				got := got.children[i]
+				want := want.children[i]
+				if got.boxType != want.boxType {
+					node := got.styledNode.Node.Data
+					t.Fatalf("node %q expects %q got %q", node, want.boxType, got.boxType)
+				}
 			}
 		})
 	}
