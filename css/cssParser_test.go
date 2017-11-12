@@ -1,7 +1,11 @@
 package css
 
-import "testing"
-import "strings"
+import (
+	"strings"
+	"testing"
+
+	"github.com/lysrt/bro/parser"
+)
 
 var ColorTests = []struct {
 	input    string
@@ -18,7 +22,7 @@ var ColorTests = []struct {
 
 func Test_parseColor(t *testing.T) {
 	for _, tt := range ColorTests {
-		var s Scanner
+		var s parser.Scanner
 		s.Init(strings.NewReader(tt.input))
 
 		actual := parseColor(&s)

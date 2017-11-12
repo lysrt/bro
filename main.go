@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"image"
 	"image/png"
 	"log"
@@ -33,14 +32,16 @@ func main() {
 		}
 	}
 
-	dom.Parcour(d)
-	fmt.Println(s)
+	//dom.Parcour(d)
+	//fmt.Println(s)
 
 	// 3. Decorating the DOM to generate the Style Tree
-	styleTree, err := GenerateStyleTree(d, s)
-	if err != nil {
-		log.Fatalf("cannot build style tree: %q", err)
-	}
+	styleTree := GenerateStyleTree(d, s)
+	// if err != nil {
+	// log.Fatalf("cannot build style tree: %q", err)
+	// }
+
+	//fmt.Println(styleTree)
 
 	// 4. Build the Layout Tree
 	layoutTree, err := GenerateLayoutTree(styleTree)

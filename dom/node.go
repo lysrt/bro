@@ -29,6 +29,26 @@ func NodeGetClasses(n *html.Node) []string {
 	return nil
 }
 
+// NodeChildren returns all child nodes of n
+func NodeChildren(n *html.Node) []*html.Node {
+	var children []*html.Node
+
+	f := n.FirstChild
+	if f == nil {
+		return children
+	}
+
+	children = append(children, f)
+
+	next := f.NextSibling
+	for next != nil {
+		children = append(children, next)
+		next = next.NextSibling
+	}
+
+	return children
+}
+
 // NodeFirstElementChild returns the first element child of the node.
 func NodeFirstElementChild(n *html.Node) *html.Node {
 	for e := n.FirstChild; e != nil; e = e.NextSibling {

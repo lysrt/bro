@@ -22,44 +22,39 @@ type MatchedRule struct {
 	Specificity css.Specificity
 }
 
-func GenerateStyleTree(dom *html.Node, css *css.Stylesheet) (*StyledNode, error) {
-	return nil, nil
-}
+func GenerateStyleTree(root *html.Node, css *css.Stylesheet) *StyledNode {
+	var propertyMap PropertyMap
 
-// matchRule tries to match a rule to a node and return the most specifique one.
-func matchRule(n *html.Node, r css.Rule) (m MatchedRule, ok bool) {
-	for _, s := range r.Selectors {
-		if matchSelector(n, s) {
-			ok = true
-			m = MatchedRule{
-				Rule:        r,
-				Specificity: s.Specificity(),
-			}
-			return
+	switch root.Type {
+	case html.ElementNode:
+		if css == nil {
+			propertyMap = make(PropertyMap)
+		} else {
+			propertyMap = specifiedValues(root, css)
 		}
+	case html.TextNode:
+		propertyMap = make(PropertyMap)
 	}
-	return
-}
 
-// matchingRules returns all the matched rules for a node.
-func matchingRules(n *html.Node, stylesheet css.Stylesheet) []MatchedRule {
-	var matches []MatchedRule
-	for _, r := range stylesheet.Rules {
-		m, ok := matchRule(n, r)
-		if !ok {
-			continue
-		}
-		matches = append(matches, m)
+	var children []StyledNode
+	for _, child := range dom.NodeChildren(root) {
+		styled := GenerateStyleTree(child, css)
+		children = append(children, *styled)
 	}
-	return matches
+
+	return &StyledNode{
+		Node:            root,
+		SpecifiedValues: propertyMap,
+		Children:        children,
+	}
 }
 
 // specifiedValues returns the apply properties of a node.
-func specifiedValues(n *html.Node, stylesheet css.Stylesheet) PropertyMap {
+func specifiedValues(element *html.Node, stylesheet *css.Stylesheet) PropertyMap {
 	properties := make(PropertyMap)
-	rules := matchingRules(n, stylesheet)
+	rules := matchingRules(element, stylesheet)
 
-	// order from lowest to highest
+	// Order from lowest to highest specificity
 	for i := range rules {
 		for j := range rules[i:] {
 			speI := rules[i].Specificity
@@ -87,6 +82,7 @@ func specifiedValues(n *html.Node, stylesheet css.Stylesheet) PropertyMap {
 			}
 		}
 	}
+
 	for _, r := range rules {
 		for _, d := range r.Rule.Declarations {
 			properties[d.Name] = d.Value
@@ -94,6 +90,34 @@ func specifiedValues(n *html.Node, stylesheet css.Stylesheet) PropertyMap {
 	}
 
 	return properties
+}
+
+// matchingRules returns all the matched rules for a node.
+func matchingRules(n *html.Node, stylesheet *css.Stylesheet) []MatchedRule {
+	var matches []MatchedRule
+	for _, r := range stylesheet.Rules {
+		m, ok := matchRule(n, r)
+		if !ok {
+			continue
+		}
+		matches = append(matches, m)
+	}
+	return matches
+}
+
+// matchRule tries to match a rule to a node and return the most specific one.
+func matchRule(n *html.Node, rule css.Rule) (m MatchedRule, ok bool) {
+	for _, s := range rule.Selectors {
+		if matchSelector(n, s) {
+			ok = true
+			m = MatchedRule{
+				Rule:        rule,
+				Specificity: s.Specificity(),
+			}
+			return
+		}
+	}
+	return
 }
 
 // matchSelector matches a node with a selector.

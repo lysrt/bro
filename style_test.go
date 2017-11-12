@@ -6,6 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/lysrt/bro/css"
+	"github.com/lysrt/bro/dom"
+
 	"golang.org/x/net/html"
 )
 
@@ -21,7 +24,7 @@ func htmlParseSnippet(t *testing.T, data string) *html.Node {
 func Test_matchSelector(t *testing.T) {
 	type args struct {
 		n        *html.Node
-		selector Selector
+		selector css.Selector
 	}
 	tests := []struct {
 		name string
@@ -32,7 +35,7 @@ func Test_matchSelector(t *testing.T) {
 			name: "match tag",
 			args: args{
 				n:        htmlParseSnippet(t, "<p></p>"),
-				selector: Selector{TagName: "p"},
+				selector: css.Selector{TagName: "p"},
 			},
 			want: true,
 		},
@@ -40,7 +43,7 @@ func Test_matchSelector(t *testing.T) {
 			name: "dont match tag",
 			args: args{
 				n:        htmlParseSnippet(t, "<div></div>"),
-				selector: Selector{TagName: "p"},
+				selector: css.Selector{TagName: "p"},
 			},
 			want: false,
 		},
@@ -48,7 +51,7 @@ func Test_matchSelector(t *testing.T) {
 			name: "match id",
 			args: args{
 				n:        htmlParseSnippet(t, `<div id="bloup"></div>`),
-				selector: Selector{ID: "bloup"},
+				selector: css.Selector{ID: "bloup"},
 			},
 			want: true,
 		},
@@ -56,7 +59,7 @@ func Test_matchSelector(t *testing.T) {
 			name: "match class",
 			args: args{
 				n:        htmlParseSnippet(t, `<div class="bloup blip"></div>`),
-				selector: Selector{Classes: []string{"blip"}},
+				selector: css.Selector{Classes: []string{"blip"}},
 			},
 			want: true,
 		},
@@ -64,7 +67,7 @@ func Test_matchSelector(t *testing.T) {
 			name: "match complex",
 			args: args{
 				n:        htmlParseSnippet(t, `<div class="bloup blip"></div>`),
-				selector: Selector{TagName: "div", Classes: []string{"blip"}},
+				selector: css.Selector{TagName: "div", Classes: []string{"blip"}},
 			},
 			want: true,
 		},
@@ -72,7 +75,7 @@ func Test_matchSelector(t *testing.T) {
 			name: "match complex (invalid class)",
 			args: args{
 				n:        htmlParseSnippet(t, `<div class="bloup blip"></div>`),
-				selector: Selector{TagName: "div", Classes: []string{"arf"}},
+				selector: css.Selector{TagName: "div", Classes: []string{"arf"}},
 			},
 			want: false,
 		},
@@ -80,7 +83,7 @@ func Test_matchSelector(t *testing.T) {
 			name: "match complex (invalid tag)",
 			args: args{
 				n:        htmlParseSnippet(t, `<div class="bloup blip"></div>`),
-				selector: Selector{TagName: "p", Classes: []string{"bloup", "blip"}},
+				selector: css.Selector{TagName: "p", Classes: []string{"bloup", "blip"}},
 			},
 			want: false,
 		},
@@ -100,30 +103,30 @@ func Test_matchSelector(t *testing.T) {
 func Test_matchRule(t *testing.T) {
 	type args struct {
 		n *html.Node
-		r Rule
+		r css.Rule
 	}
 	tests := []struct {
 		name     string
 		args     args
-		wantRule Rule
+		wantRule css.Rule
 		wantOk   bool
 	}{
 		{
 			name: "valid",
 			args: args{
 				n: &html.Node{Data: "p"},
-				r: Rule{Selectors: []Selector{{TagName: "a"}, {TagName: "p"}}},
+				r: css.Rule{Selectors: []css.Selector{{TagName: "a"}, {TagName: "p"}}},
 			},
-			wantRule: Rule{Selectors: []Selector{{TagName: "a"}, {TagName: "p"}}},
+			wantRule: css.Rule{Selectors: []css.Selector{{TagName: "a"}, {TagName: "p"}}},
 			wantOk:   true,
 		},
 		{
 			name: "invalid",
 			args: args{
 				n: &html.Node{Data: "p"},
-				r: Rule{Selectors: []Selector{{TagName: "a"}, {ID: "bloup"}}},
+				r: css.Rule{Selectors: []css.Selector{{TagName: "a"}, {ID: "bloup"}}},
 			},
-			wantRule: Rule{},
+			wantRule: css.Rule{},
 			wantOk:   false,
 		},
 	}
@@ -146,62 +149,62 @@ func Test_specifiedValues(t *testing.T) {
 		<li class="all"></li>
 		<li id="green-point" class="last all"></li>
 	</ul>`)
-	style := Stylesheet{
-		Rules: []Rule{
+	style := &css.Stylesheet{
+		Rules: []css.Rule{
 			{
-				Selectors: []Selector{
+				Selectors: []css.Selector{
 					{TagName: "ul"},
 				},
-				Declarations: []Declaration{
-					{Name: "background-color", Value: Value{Color: Color{Name: "red"}}},
-					{Name: "width", Value: Value{Length: Length{Quantity: 900, Unit: Px}}},
+				Declarations: []css.Declaration{
+					{Name: "background-color", Value: css.Value{Color: css.Color{Name: "red"}}},
+					{Name: "width", Value: css.Value{Length: css.Length{Quantity: 900, Unit: css.Px}}},
 				},
 			},
 			{
-				Selectors: []Selector{
+				Selectors: []css.Selector{
 					{ID: "list"},
 				},
-				Declarations: []Declaration{
-					{Name: "background-color", Value: Value{Color: Color{Name: "blue"}}},
+				Declarations: []css.Declaration{
+					{Name: "background-color", Value: css.Value{Color: css.Color{Name: "blue"}}},
 				},
 			},
 			{
-				Selectors: []Selector{
+				Selectors: []css.Selector{
 					{Classes: []string{"all"}},
 				},
-				Declarations: []Declaration{
-					{Name: "font-size", Value: Value{Length: Length{Quantity: 12, Unit: Px}}},
+				Declarations: []css.Declaration{
+					{Name: "font-size", Value: css.Value{Length: css.Length{Quantity: 12, Unit: css.Px}}},
 				},
 			},
 			{
-				Selectors: []Selector{
+				Selectors: []css.Selector{
 					{Classes: []string{"first"}},
 				},
-				Declarations: []Declaration{
-					{Name: "color", Value: Value{Color: Color{Name: "blue"}}},
+				Declarations: []css.Declaration{
+					{Name: "color", Value: css.Value{Color: css.Color{Name: "blue"}}},
 				},
 			},
 			{
-				Selectors: []Selector{
+				Selectors: []css.Selector{
 					{Classes: []string{"last"}},
 				},
-				Declarations: []Declaration{
-					{Name: "color", Value: Value{Color: Color{Name: "red"}}},
+				Declarations: []css.Declaration{
+					{Name: "color", Value: css.Value{Color: css.Color{Name: "red"}}},
 				},
 			},
 			{
-				Selectors: []Selector{
+				Selectors: []css.Selector{
 					{ID: "green-point"},
 				},
-				Declarations: []Declaration{
-					{Name: "color", Value: Value{Color: Color{Name: "green"}}},
+				Declarations: []css.Declaration{
+					{Name: "color", Value: css.Value{Color: css.Color{Name: "green"}}},
 				},
 			},
 		},
 	}
 	type args struct {
 		n          *html.Node
-		stylesheet Stylesheet
+		stylesheet *css.Stylesheet
 	}
 	tests := []struct {
 		name string
@@ -215,30 +218,30 @@ func Test_specifiedValues(t *testing.T) {
 				stylesheet: style,
 			},
 			want: PropertyMap{
-				"background-color": Value{Color: Color{Name: "blue"}},
-				"width":            Value{Length: Length{Quantity: 900, Unit: Px}},
+				"background-color": css.Value{Color: css.Color{Name: "blue"}},
+				"width":            css.Value{Length: css.Length{Quantity: 900, Unit: css.Px}},
 			},
 		},
 		{
 			name: ".first.all",
 			args: args{
-				n:          NodeFirstElementChild(node),
+				n:          dom.NodeFirstElementChild(node),
 				stylesheet: style,
 			},
 			want: PropertyMap{
-				"color":     Value{Color: Color{Name: "blue"}},
-				"font-size": Value{Length: Length{Quantity: 12, Unit: Px}},
+				"color":     css.Value{Color: css.Color{Name: "blue"}},
+				"font-size": css.Value{Length: css.Length{Quantity: 12, Unit: css.Px}},
 			},
 		},
 		{
 			name: "#green-point.last.all",
 			args: args{
-				n:          NodeLastElementChild(node),
+				n:          dom.NodeLastElementChild(node),
 				stylesheet: style,
 			},
 			want: PropertyMap{
-				"color":     Value{Color: Color{Name: "green"}},
-				"font-size": Value{Length: Length{Quantity: 12, Unit: Px}},
+				"color":     css.Value{Color: css.Color{Name: "green"}},
+				"font-size": css.Value{Length: css.Length{Quantity: 12, Unit: css.Px}},
 			},
 		},
 	}

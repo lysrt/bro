@@ -94,12 +94,12 @@ type Length struct {
 	Unit     Unit
 }
 
-type Unit int
+type Unit string
 
 const (
-	Px Unit = iota + 1
-	Em
-	Percent
+	Px      Unit = "px"
+	Em           = "em"
+	Percent      = "pc"
 )
 
 type Color struct {
