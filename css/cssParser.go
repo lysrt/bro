@@ -1,7 +1,7 @@
 package css
 
 import (
-	"os"
+	"io"
 	"strconv"
 	"text/scanner"
 	"unicode"
@@ -9,19 +9,11 @@ import (
 	"github.com/lysrt/bro/parser"
 )
 
-func ParseCSS(inputFileName string) (*Stylesheet, error) {
-	f, err := os.Open(inputFileName)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
+func ParseCSS(r io.Reader) *Stylesheet {
 	var s parser.Scanner
-	s.Init(f)
-
+	s.Init(r)
 	sheet := parseStylesheet(&s)
-
-	return sheet, nil
+	return sheet
 }
 
 func parseStylesheet(s *parser.Scanner) *Stylesheet {

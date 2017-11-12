@@ -27,10 +27,11 @@ func main() {
 	// 2. Parsing the CSS to a *Stylesheet
 	var s *css.Stylesheet
 	if *cssIn != "" {
-		s, err = css.ParseCSS(*cssIn)
+		f, err := os.Open(*cssIn)
 		if err != nil {
-			log.Fatalf("cannot parse CSS file: %q", err)
+			log.Fatal("fail to open stylesheet:", err)
 		}
+		s = css.ParseCSS(f)
 	}
 
 	//dom.Parcour(d)
