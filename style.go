@@ -15,7 +15,7 @@ type PropertyMap map[string]css.Value
 type StyledNode struct {
 	Node            *html.Node
 	SpecifiedValues PropertyMap
-	Children        []StyledNode
+	Children        []*StyledNode
 }
 
 // Value returns the value of a CSS property if it exists
@@ -69,10 +69,10 @@ func GenerateStyleTree(root *html.Node, css *css.Stylesheet) *StyledNode {
 		propertyMap = make(PropertyMap)
 	}
 
-	var children []StyledNode
+	var children []*StyledNode
 	for _, child := range dom.NodeChildren(root) {
 		styled := GenerateStyleTree(child, css)
-		children = append(children, *styled)
+		children = append(children, styled)
 	}
 
 	return &StyledNode{
