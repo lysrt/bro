@@ -1,4 +1,5 @@
-body, input {
+body {
+    display: block;
     color: red;
     font-size: 1.5 em;
     line-height: 24px;
@@ -7,7 +8,7 @@ body, input {
     border-width: 1px
 }
 
-h1 {
+h1, input {
     font-weight: bold;
 }
 

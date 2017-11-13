@@ -36,7 +36,7 @@ const (
 func (node *StyledNode) Display() Display {
 	value, ok := node.Value("display")
 	if !ok {
-		return Inline
+		return Block // Block by default
 	}
 
 	switch strings.ToLower(value.Keyword) {

@@ -1,6 +1,8 @@
 package main
 
-import "github.com/lysrt/bro/css"
+import (
+	"github.com/lysrt/bro/css"
+)
 
 type Dimensions struct {
 	// Position of the content area relative to the document origin:
@@ -104,12 +106,19 @@ func (box *LayoutBox) getInlineContainer() *LayoutBox {
 	case BlockNode:
 		// If we've just generated an anonymous block box, keep using it.
 		// Otherwise, create a new one.
+		if len(box.children) == 0 {
+			box.children = append(box.children, newLayoutBox(AnonymousBlock, nil))
+			return box.children[0]
+		}
+
 		lastChild := box.children[len(box.children)-1]
 		switch lastChild.boxType {
 		case AnonymousBlock:
+			return lastChild
+		default:
 			box.children = append(box.children, newLayoutBox(AnonymousBlock, nil))
+			return box.children[len(box.children)-1]
 		}
-		return lastChild
 	}
 	panic("No more cases to switch")
 }
@@ -118,10 +127,12 @@ func (box *LayoutBox) Layout(containingBlock Dimensions) {
 	switch box.boxType {
 	case InlineNode:
 		// TODO
+		panic("Inline Node Unimplemented")
 	case BlockNode:
 		box.layoutBlock(containingBlock)
 	case AnonymousBlock:
 		// TODO
+		panic("Anonymous Block Unimplemented")
 	}
 }
 
