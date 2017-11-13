@@ -32,8 +32,7 @@ func Paint(layoutRoot *LayoutBox) (image.Image, error) {
 
 	width := int(layoutRoot.dimensions.content.width)
 	height := int(layoutRoot.dimensions.content.height)
-	// width, height := 500, 500
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
+	img := image.NewNRGBA(image.Rect(0, 0, width, height))
 	draw.Draw(img, img.Bounds(), image.White, image.ZP, draw.Src)
 
 	canvas := NewCanvas(img)

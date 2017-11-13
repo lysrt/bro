@@ -8,16 +8,16 @@ import (
 )
 
 type Canvas struct {
-	*image.RGBA
-	color color.RGBA
+	*image.NRGBA
+	color color.NRGBA
 }
 
-func NewCanvas(img *image.RGBA) *Canvas {
-	return &Canvas{RGBA: img}
+func NewCanvas(img *image.NRGBA) *Canvas {
+	return &Canvas{NRGBA: img}
 }
 
 func (c *Canvas) SetColor(col css.Color) {
-	c.color = color.RGBA{
+	c.color = color.NRGBA{
 		A: col.A,
 		R: col.R,
 		G: col.G,
