@@ -207,10 +207,10 @@ func parseColor(s *parser.Scanner) Color {
 		color.G = hexToUint8(text[2:4])
 		color.B = hexToUint8(text[4:6])
 	} else if len(text) == 8 {
-		color.A = hexToUint8(text[0:2])
-		color.R = hexToUint8(text[2:4])
-		color.G = hexToUint8(text[4:6])
-		color.B = hexToUint8(text[6:8])
+		color.R = hexToUint8(text[0:2])
+		color.G = hexToUint8(text[2:4])
+		color.B = hexToUint8(text[4:6])
+		color.A = hexToUint8(text[6:8])
 	}
 	return color
 }

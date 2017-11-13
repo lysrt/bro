@@ -5,4 +5,5 @@ A toy browser engine written in Go, inspired by [Robinson](https://limpet.net/mb
 ## TODO
 
 - [ ] change `ParseCSS` to use an `io.Reader`
-- [ ] add a `StyleTree` function to transform an `html.Node` and a `Stylesheet` into a `StyleNode`
+- [ ] Ignore HTML comments and white spaces when building style tree
+- [ ] Implement CSS star selector

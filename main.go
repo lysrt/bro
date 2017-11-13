@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"image"
 	"image/png"
 	"log"
@@ -50,18 +49,20 @@ func main() {
 	// if err != nil {
 	// 	log.Fatalf("cannot build layout tree: %q", err)
 	// }
-
-	fmt.Println(layoutTree)
+	// fmt.Println(layoutTree)
 
 	// 4.2 Parcour the layout tree to compute boxes dimensions
-	layoutTree.Layout(Dimensions{content: Rect{0, 0, 200, 100}})
-	fmt.Println(layoutTree)
+	// Height must be zero here!
+	layoutTree.Layout(Dimensions{content: Rect{x: 0, y: 0, width: 300, height: 0}})
+	// fmt.Println(layoutTree)
 
 	// 5. Paint the output from the Layout Tree
 	pixels, err := Paint(layoutTree)
 	if err != nil {
 		log.Fatalf("cannot paint from layout tree: %q", err)
 	}
+
+	//fmt.Println(pixels)
 
 	writeOutput(*output, pixels)
 }

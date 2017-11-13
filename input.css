@@ -1,21 +1,9 @@
-body {
-    display: block;
-    color: red;
-    font-size: 1.5 em;
-    line-height: 24px;
-    border-color: black;
-    border-style: solid;
-    border-width: 1px
-}
+.a { background-color: #FF0000FF; padding: 12px;}
+.b { background-color: #FF0000EE; padding: 12px;}
+.c { background-color: #FF0000DD; padding: 12px;}
+.d { background-color: #FF0000CC; padding: 12px;}
+.e { background-color: #FF0000BB; padding: 12px;}
+.f { background-color: #FF0000AA; padding: 12px;}
+.g { background-color: #FF000099; padding: 12px;}
+.h { background-color: #FF000088; padding: 12px;}
 
-h1, input {
-    font-weight: bold;
-}
-
-#title {
-    text-decoration: underline;
-}
-
-.item {
-    color: blue;
-}

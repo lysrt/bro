@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/lysrt/bro/css"
 )
 
@@ -29,6 +31,10 @@ func (d Dimensions) paddingBox() Rect {
 
 type Rect struct {
 	x, y, width, height float32
+}
+
+func (r Rect) String() string {
+	return fmt.Sprintf("(%.f,%.f : w:%.f, h:%.f)", r.x, r.y, r.width, r.height)
 }
 
 func (r Rect) expandedBy(edge EdgeSizes) Rect {
