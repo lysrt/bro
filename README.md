@@ -39,12 +39,11 @@ A toy browser engine written in Go, inspired by [Robinson](https://limpet.net/mb
 
 Command
 
-`./bro -html input.html -css input.css -o output.png
+`./bro -html input.html -css input.css -o output.png`
 
 `output.png`
 
-<img src="out.png" alt="Example output">
-
+![Example output](out.png)
 
 ## TODO
 
