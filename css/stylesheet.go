@@ -89,7 +89,7 @@ type Value struct {
 }
 
 // ToPx is a Helper method needed by layout.go to get the actual pixel value
-func (v Value) ToPx() float32 {
+func (v Value) ToPx() float64 {
 	if v.Length.Unit == Px {
 		return v.Length.Quantity
 	}
@@ -98,7 +98,7 @@ func (v Value) ToPx() float32 {
 
 // Length describes a unit of length in CSS
 type Length struct {
-	Quantity float32
+	Quantity float64
 	Unit     Unit
 }
 

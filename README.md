@@ -27,14 +27,14 @@ A toy browser engine written in Go, inspired by [Robinson](https://limpet.net/mb
 `input.css`
 
 ```css
-.a { background-color: #FFFF00FF; padding: 12px;}
-.b { background-color: #FFFF00DD; padding: 12px;}
-.c { background-color: #FFFF00BB; padding: 12px;}
-.d { background-color: #FFFF0099; padding: 12px;}
-.e { background-color: #FFFF0077; padding: 12px;}
-.f { background-color: #FFFF0055; padding: 12px;}
-.g { background-color: #FFFF0033; padding: 12px;}
-.h { background-color: #FFFF0011; padding: 12px;}
+.a { background-color: #FFFFFF; padding: 12px;}
+.b { background-color: #DDDDDD; padding: 12px;}
+.c { background-color: #BBBBBB; padding: 12px;}
+.d { background-color: #999; padding: 12px;}
+.e { background-color: #777; padding: 12px;}
+.f { background-color: #555; padding: 12px;}
+.g { background-color: #333; padding: 12px;}
+.h { background-color: #111; padding: 12px;}
 ```
 
 Command
@@ -47,7 +47,6 @@ Command
 
 ## TODO
 
-- [ ] change `ParseCSS` to use an `io.Reader`
 - [ ] Ignore HTML comments and white spaces when building style tree
 - [ ] Implement CSS star selector
 - [ ] Add text rendering

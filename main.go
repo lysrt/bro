@@ -13,7 +13,7 @@ import (
 
 func main() {
 	htmlIn := flag.String("html", "input.html", "-html input.html")
-	cssIn := flag.String("css", "", "-css input.css")
+	cssIn := flag.String("css", "input.css", "-css input.css")
 	output := flag.String("o", "out.png", "-o out.png")
 	flag.Parse()
 
@@ -30,7 +30,8 @@ func main() {
 		if err != nil {
 			log.Fatal("fail to open stylesheet:", err)
 		}
-		s = css.ParseCSS(f)
+		parser := css.NewParser(f)
+		s = parser.ParseStylesheet()
 	}
 
 	//dom.Parcour(d)

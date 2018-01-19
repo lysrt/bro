@@ -30,7 +30,7 @@ func (d Dimensions) paddingBox() Rect {
 }
 
 type Rect struct {
-	x, y, width, height float32
+	x, y, width, height float64
 }
 
 func (r Rect) String() string {
@@ -47,7 +47,7 @@ func (r Rect) expandedBy(edge EdgeSizes) Rect {
 }
 
 type EdgeSizes struct {
-	left, right, top, bottom float32
+	left, right, top, bottom float64
 }
 
 type BoxType string
