@@ -1,19 +1,13 @@
 package dom
 
 import (
-	"os"
+	"io"
 
 	"golang.org/x/net/html"
 )
 
-func ParseHTML(name string) (*html.Node, error) {
-	f, err := os.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	node, err := html.Parse(f)
+func ParseHTML(r io.Reader) (*html.Node, error) {
+	node, err := html.Parse(r)
 	if err != nil {
 		return nil, err
 	}

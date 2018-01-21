@@ -8,10 +8,12 @@ import (
 )
 
 type Parser struct {
-	Lexer *Lexer
+	lexer *Lexer
 
 	curToken  CSSToken
 	peekToken CSSToken
+
+	errors []string
 }
 
 func NewParser(r io.Reader) *Parser {
@@ -21,7 +23,10 @@ func NewParser(r io.Reader) *Parser {
 	}
 
 	lexer := NewLexer(string(b))
-	p := Parser{Lexer: lexer}
+	p := Parser{
+		lexer:  lexer,
+		errors: []string{},
+	}
 
 	p.nextToken()
 	p.nextToken()
@@ -29,9 +34,23 @@ func NewParser(r io.Reader) *Parser {
 	return &p
 }
 
+func (p *Parser) Errors() []string {
+	return p.errors
+}
+
+func (p *Parser) tokenError(expected CSSTokenType) {
+	msg := fmt.Sprintf("expected %s, got %s", expected, p.curToken.Litteral)
+	p.errors = append(p.errors, msg)
+}
+
 func (p *Parser) nextToken() {
 	p.curToken = p.peekToken
-	p.peekToken = p.Lexer.NextToken()
+	p.peekToken = p.lexer.NextToken()
+
+	// Skip comments
+	if p.curToken.Type == COMMENT {
+		p.nextToken()
+	}
 }
 
 func (p *Parser) ParseStylesheet() *Stylesheet {
@@ -52,18 +71,23 @@ func (p *Parser) parseRule() Rule {
 	rule := Rule{}
 	rule.Selectors = p.parseSelectors()
 
-	if p.curToken.Type == LBRACE {
-		p.nextToken() // TODO Check this is always the case
+	if p.curToken.Type != LBRACE {
+		p.tokenError(LBRACE)
 	}
+	p.nextToken()
 
 	rule.Declarations = []Declaration{}
 	for p.curToken.Type != RBRACE && p.peekToken.Type != EOF {
-		rule.Declarations = append(rule.Declarations, p.parseDeclaration())
+		declaration := p.parseDeclaration()
+		if declaration.Name != "" {
+			rule.Declarations = append(rule.Declarations, declaration)
+		}
 	}
 
-	if p.curToken.Type == RBRACE {
-		p.nextToken() // TODO Check this is always the case
+	if p.curToken.Type != RBRACE {
+		p.tokenError(RBRACE)
 	}
+	p.nextToken()
 
 	return rule
 }
@@ -72,11 +96,7 @@ func (p *Parser) parseSelectors() []Selector {
 	var selectors []Selector
 
 	for p.curToken.Type != LBRACE && p.curToken.Type != EOF {
-		selector, err := p.parseSelector()
-		if err != nil {
-			panic(err)
-		}
-
+		selector := p.parseSelector()
 		selectors = append(selectors, selector)
 
 		if p.curToken.Type == COMMA {
@@ -88,59 +108,79 @@ func (p *Parser) parseSelectors() []Selector {
 	return selectors
 }
 
-func (p *Parser) parseSelector() (Selector, error) {
-	selector := Selector{}
-
-	switch p.curToken.Type {
-	case HASH:
-		if p.peekToken.Type != IDENTIFIER {
-			return selector, fmt.Errorf("bad id selector: %s", p.peekToken.Litteral)
-		}
-		selector.ID = p.peekToken.Litteral
-		p.nextToken()
-		p.nextToken()
-		return selector, nil
-	case DOT:
-		if p.peekToken.Type != IDENTIFIER {
-			return selector, fmt.Errorf("bad class selector: %s", p.peekToken.Litteral)
-		}
-		selector.Classes = []string{p.peekToken.Litteral}
-		p.nextToken()
-		p.nextToken()
-		return selector, nil
-	case IDENTIFIER:
-		selector.TagName = p.curToken.Litteral
-		p.nextToken()
-		return selector, nil
-	default:
-		return selector, fmt.Errorf("bad selector: %s %s", p.curToken.Litteral, p.peekToken.Litteral)
+func (p *Parser) parseSelector() Selector {
+	selector := Selector{
+		Classes: []string{},
 	}
+
+	for p.curToken.Type != COMMA && p.curToken.Type != LBRACE && p.curToken.Type != EOF {
+		switch p.curToken.Type {
+		case STAR:
+			selector.TagName = "*"
+			p.nextToken()
+			continue
+		case IDENTIFIER:
+			selector.TagName = p.curToken.Litteral
+			p.nextToken()
+			continue
+		case HASH:
+			if p.peekToken.Type != IDENTIFIER {
+				p.tokenError(IDENTIFIER)
+				p.nextToken()
+				return selector
+			}
+			selector.ID = p.peekToken.Litteral
+			p.nextToken()
+			p.nextToken()
+			continue
+		case DOT:
+			if p.peekToken.Type != IDENTIFIER {
+				p.tokenError(IDENTIFIER)
+				p.nextToken()
+				return selector
+			}
+			selector.Classes = append(selector.Classes, p.peekToken.Litteral)
+			p.nextToken()
+			p.nextToken()
+			continue
+		default:
+			p.tokenError(IDENTIFIER)
+			p.tokenError(STAR)
+			p.tokenError(DOT)
+			p.tokenError(HASH)
+			p.nextToken()
+			return selector
+		}
+	}
+
+	return selector
 }
 
 func (p *Parser) parseDeclaration() Declaration {
+	d := Declaration{}
+
 	if p.curToken.Type != IDENTIFIER {
-		panic("bad declaration, should start witn an identifier")
+		p.tokenError(IDENTIFIER)
+		p.nextToken()
+		return d
 	}
 
-	identifier := p.curToken.Litteral
+	d.Name = p.curToken.Litteral
 	p.nextToken()
 
 	if p.curToken.Type != COLON {
-		panic("bad declaration, expected COLON(:)")
+		p.tokenError(COLON)
+		return d
 	}
 	p.nextToken()
 
-	value := p.parseValue()
+	d.Value = p.parseValue()
 
 	if p.curToken.Type != SEMICOLON {
-		panic("bad declaration, expected SEMICOLON(;), got " + p.curToken.Litteral)
+		p.tokenError(SEMICOLON)
+		return d
 	}
 	p.nextToken()
-
-	d := Declaration{
-		Name:  identifier,
-		Value: value,
-	}
 
 	return d
 }

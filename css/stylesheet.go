@@ -44,14 +44,18 @@ type Selector struct {
 }
 
 func (s Selector) String() string {
-	r := "  Selector ("
+	parts := []string{}
 	if s.TagName != "" {
-		r += fmt.Sprintf("TAG: %s)", s.TagName)
-	} else if s.ID != "" {
-		r += fmt.Sprintf("ID: %s)", s.ID)
-	} else {
-		r += fmt.Sprintf("CLASSES: [%v])", strings.Join(s.Classes, ", "))
+		parts = append(parts, fmt.Sprintf("TAG: %s", s.TagName))
 	}
+	if s.ID != "" {
+		parts = append(parts, fmt.Sprintf("ID: %s", s.ID))
+	}
+	if len(s.Classes) > 0 {
+		parts = append(parts, fmt.Sprintf("CLASSES: ([%v])", strings.Join(s.Classes, ", ")))
+	}
+
+	r := fmt.Sprintf("Selector (%s)", strings.Join(parts, ", "))
 	return r
 }
 

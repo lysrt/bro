@@ -9,55 +9,88 @@ import (
 
 	"github.com/lysrt/bro/css"
 	"github.com/lysrt/bro/dom"
+	"golang.org/x/net/html"
 )
 
 func main() {
-	htmlIn := flag.String("html", "input.html", "-html input.html")
-	cssIn := flag.String("css", "input.css", "-css input.css")
-	output := flag.String("o", "out.png", "-o out.png")
+	var (
+		htmlInput string
+		cssInput  string
+		pngOutput string
+	)
+
+	flag.StringVar(&htmlInput, "html", "input.html", "-html input.html")
+	flag.StringVar(&cssInput, "css", "input.css", "-css input.css")
+	flag.StringVar(&pngOutput, "o", "out.png", "-o out.png")
 	flag.Parse()
 
-	// 1. Constructing the DOM tree
-	d, err := dom.ParseHTML(*htmlIn)
+	var (
+		domNodes *html.Node
+		style    *css.Stylesheet
+	)
+
+	//
+	// 1. Construct the DOM tree
+	//
+	htmlFile, err := os.Open(htmlInput)
+	if err != nil {
+		log.Fatalf("cannot open HTML file: %q", err)
+	}
+
+	domNodes, err = dom.ParseHTML(htmlFile)
 	if err != nil {
 		log.Fatalf("cannot parse HTML file: %q", err)
 	}
+	htmlFile.Close()
+	// dom.Parcour(domNodes)
 
-	// 2. Parsing the CSS to a *Stylesheet
-	var s *css.Stylesheet
-	if *cssIn != "" {
-		f, err := os.Open(*cssIn)
-		if err != nil {
-			log.Fatal("fail to open stylesheet:", err)
-		}
-		parser := css.NewParser(f)
-		s = parser.ParseStylesheet()
+	//
+	// 2. Parse the CSS to a *Stylesheet
+	//
+	cssFile, err := os.Open(cssInput)
+	if err != nil {
+		log.Fatalf("cannot open stylesheet: %q", err)
 	}
 
-	//dom.Parcour(d)
-	//fmt.Println(s)
+	parser := css.NewParser(cssFile)
+	cssFile.Close()
+	style = parser.ParseStylesheet()
+	if len(parser.Errors()) > 0 {
+		for _, e := range parser.Errors() {
+			log.Printf("parsing error: %q\n", e)
+		}
+	}
+	// fmt.Println(style)
 
+	//
 	// 3. Decorating the DOM to generate the Style Tree
-	styleTree := GenerateStyleTree(d, s)
+	//
+	styleTree := GenerateStyleTree(domNodes, style)
 	// if err != nil {
 	// log.Fatalf("cannot build style tree: %q", err)
 	// }
 
 	//fmt.Println(styleTree)
 
+	//
 	// 4.1 Build the Layout Tree
+	//
 	layoutTree := GenerateLayoutTree(styleTree)
 	// if err != nil {
 	// 	log.Fatalf("cannot build layout tree: %q", err)
 	// }
 	// fmt.Println(layoutTree)
 
+	//
 	// 4.2 Parcour the layout tree to compute boxes dimensions
+	//
 	// Height must be zero here!
 	layoutTree.Layout(Dimensions{content: Rect{x: 0, y: 0, width: 300, height: 0}})
 	// fmt.Println(layoutTree)
 
+	//
 	// 5. Paint the output from the Layout Tree
+	//
 	pixels, err := Paint(layoutTree)
 	if err != nil {
 		log.Fatalf("cannot paint from layout tree: %q", err)
@@ -65,7 +98,7 @@ func main() {
 
 	//fmt.Println(pixels)
 
-	writeOutput(*output, pixels)
+	writeOutput(pngOutput, pixels)
 }
 
 func writeOutput(outputFileName string, pixels image.Image) {

@@ -13,6 +13,7 @@ const (
 	IDENTIFIER = "IDENTIFIER"
 	NUMBER     = "NUMBER"
 
+	STAR         = "*"
 	DOT          = "."
 	COMMA        = ","
 	COLON        = ":"
@@ -64,6 +65,8 @@ func (l *Lexer) NextToken() CSSToken {
 	l.skipWhitespace()
 
 	switch l.char {
+	case '*':
+		tok = newToken(STAR, l.char)
 	case '.':
 		tok = newToken(DOT, l.char)
 	case ',':
