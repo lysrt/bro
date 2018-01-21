@@ -33,7 +33,7 @@ func TestSelector(t *testing.T) {
 			return
 		}
 
-		actual := *selector
+		actual := selector
 		if actual.ID != tt.expected.ID {
 			t.Fatalf("%s - expected: %v actual:  %v", tt.input, tt.expected, actual)
 		}

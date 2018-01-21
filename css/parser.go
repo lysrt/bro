@@ -20,7 +20,7 @@ func NewParser(r io.Reader) *Parser {
 		return nil
 	}
 
-	lexer := New(string(b))
+	lexer := NewLexer(string(b))
 	p := Parser{Lexer: lexer}
 
 	p.nextToken()

@@ -5,12 +5,17 @@ import (
 )
 
 func TestNextToken(t *testing.T) {
-	input := ".name, a { background-color: #FFFF00FF; padding: 12em;}"
+	input := `
+		.name, a {background-color: #FF00FF; padding: 12em;}
+		#figure {
+			color : rgb(128, 0, 0);
+			margin: 0;
+		}
+		/*    comment example*/
+		>
+	`
 
-	tests := []struct {
-		expectedType     CSSTokenType
-		expectedLitteral string
-	}{
+	tests := []CSSToken{
 		{DOT, "."},
 		{IDENTIFIER, "name"},
 		{COMMA, ","},
@@ -19,7 +24,7 @@ func TestNextToken(t *testing.T) {
 		{IDENTIFIER, "background-color"},
 		{COLON, ":"},
 		{HASH, "#"},
-		{IDENTIFIER, "FFFF00FF"},
+		{IDENTIFIER, "FF00FF"},
 		{SEMICOLON, ";"},
 		{IDENTIFIER, "padding"},
 		{COLON, ":"},
@@ -27,18 +32,39 @@ func TestNextToken(t *testing.T) {
 		{IDENTIFIER, "em"},
 		{SEMICOLON, ";"},
 		{RBRACE, "}"},
+		{HASH, "#"},
+		{IDENTIFIER, "figure"},
+		{LBRACE, "{"},
+		{IDENTIFIER, "color"},
+		{COLON, ":"},
+		{IDENTIFIER, "rgb"},
+		{LPARENTHESIS, "("},
+		{NUMBER, "128"},
+		{COMMA, ","},
+		{NUMBER, "0"},
+		{COMMA, ","},
+		{NUMBER, "0"},
+		{RPARENTHESIS, ")"},
+		{SEMICOLON, ";"},
+		{IDENTIFIER, "margin"},
+		{COLON, ":"},
+		{NUMBER, "0"},
+		{SEMICOLON, ";"},
+		{RBRACE, "}"},
+		{COMMENT, "comment example"},
+		{ILLEGAL, ">"},
 	}
 
-	l := New(input)
+	l := NewLexer(input)
 	for i, tt := range tests {
 		tok := l.NextToken()
 
-		if tok.Type != tt.expectedType {
-			t.Fatalf("tests[%d] - wrong token type. expected=%q, got=%q", i, tt.expectedType, tok.Type)
+		if tok.Type != tt.Type {
+			t.Fatalf("tests[%d] - wrong token type. expected=%q, got=%q", i, tt.Type, tok.Type)
 		}
 
-		if tok.Litteral != tt.expectedLitteral {
-			t.Fatalf("tests[%d] - wrong token litteral. expected=%q, got=%q", i, tt.expectedLitteral, tok.Litteral)
+		if tok.Litteral != tt.Litteral {
+			t.Fatalf("tests[%d] - wrong token litteral. expected=%q, got=%q", i, tt.Litteral, tok.Litteral)
 		}
 	}
 }
