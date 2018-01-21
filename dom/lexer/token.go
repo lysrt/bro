@@ -1,18 +1,18 @@
 package lexer
 
 const (
-	Illegal = "Illegal"
-	EOF     = "EOF"
+	TokenIllegal = "Illegal"
+	TokenEOF     = "EOF"
 
-	Identifier = "Identifier" // id, class, charset, ...
+	TokenIdent  = "Identifier" // id, class, charset, ...
+	TokenString = "String"
+	TokenText   = "Text"
 
-	Bang          = "!"
-	Equal         = "="
-	Slash         = "/"
-	String        = "String"
-	Text          = "Text"
-	FAngleBracket = ">" // forward angle bracket
-	BAngleBracket = "<" // backward angle bracket
+	TokenBang     = "!"
+	TokenEqual    = "="
+	TokenSlash    = "/"
+	TokenLBracket = ">" // forward angle bracket
+	TokenRBracket = "<" // backward angle bracket
 )
 
 type TokenType string
