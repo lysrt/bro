@@ -1,17 +1,21 @@
 package lexer
 
-type scanFn func(l *Lexer) (Token, scanFn)
+import "fmt"
+
+type lexFn func(l *Lexer) (Token, lexFn)
 
 type Lexer struct {
 	input        string
-	position     int  // current position in the input (current char)
-	readPosition int  // current reading position in the input (after current char)
+	position     int // current position in the input (current char)
+	readPosition int // current reading position in the input (after current char)
+	line         int
+	linePosition int
 	ch           byte // current char
-	scan         scanFn
+	lex          lexFn
 }
 
 func New(input string) *Lexer {
-	l := &Lexer{input: input, scan: scanNode}
+	l := &Lexer{input: input, lex: lexNode}
 	l.readChar()
 	return l
 }
@@ -22,36 +26,46 @@ func (l *Lexer) readChar() {
 	} else {
 		l.ch = l.input[l.readPosition]
 	}
+	if l.ch == '\n' {
+		l.line = 0
+		l.linePosition = 0
+	}
 	l.position = l.readPosition
 	l.readPosition++
+	l.linePosition++
 }
 
 func (l *Lexer) NextToken() Token {
-	tok, fn := l.scan(l)
-	l.scan = fn
+	tok, fn := l.lex(l)
+	l.lex = fn
 	return tok
 }
 
-func scanNode(l *Lexer) (tok Token, fn scanFn) {
-	fn = scanNode
+func lexNode(l *Lexer) (tok Token, fn lexFn) {
+	fn = lexNode
 
 	l.skipWhitespace()
 
 	switch l.ch {
 	case '!':
-		tok = newToken(TokenBang, l.ch)
+		tok.Type = TokenBang
+		tok.Literal = string(l.ch)
 	case '=':
-		tok = newToken(TokenEqual, l.ch)
+		tok.Type = TokenEqual
+		tok.Literal = string(l.ch)
 	case '/':
-		tok = newToken(TokenSlash, l.ch)
+		tok.Type = TokenSlash
+		tok.Literal = string(l.ch)
 	case '\'', '"':
 		tok.Type = TokenString
 		tok.Literal = l.readString()
 	case '<':
-		tok = newToken(TokenRBracket, l.ch)
+		tok.Type = TokenRBracket
+		tok.Literal = string(l.ch)
 	case '>':
-		tok = newToken(TokenLBracket, l.ch)
-		fn = scanText
+		tok.Type = TokenLBracket
+		tok.Literal = string(l.ch)
+		fn = lexText
 	case '0':
 		tok.Literal, tok.Type = "", TokenEOF
 	default:
@@ -60,14 +74,15 @@ func scanNode(l *Lexer) (tok Token, fn scanFn) {
 			tok.Literal = l.readIdentifier()
 			return
 		} else {
-			tok = newToken(TokenIllegal, l.ch)
+			tok.Type = TokenError
+			tok.Literal = fmt.Sprintf("illegal character %q", l.ch)
 		}
 	}
 	l.readChar()
 	return
 }
 
-func scanText(l *Lexer) (tok Token, fn scanFn) {
+func lexText(l *Lexer) (tok Token, fn lexFn) {
 	position := l.position
 	if l.ch == 0 {
 		tok.Type = TokenEOF
@@ -80,8 +95,10 @@ func scanText(l *Lexer) (tok Token, fn scanFn) {
 			whitespace++
 		}
 		if l.ch == '<' || l.ch == 0 {
-			tok = Token{Type: TokenText, Literal: l.input[position:l.position]}
-			fn = scanNode
+			tok = newToken(l)
+			tok.Type = TokenText
+			tok.Literal = l.input[position:l.position]
+			fn = lexNode
 			break
 		}
 		//TODO: detect HTML character
@@ -92,8 +109,12 @@ func scanText(l *Lexer) (tok Token, fn scanFn) {
 	return
 }
 
-func newToken(tt TokenType, ch byte) Token {
-	return Token{Type: tt, Literal: string(ch)}
+func newToken(l *Lexer) Token {
+	return Token{
+		Position:     l.position,
+		Line:         l.line,
+		LinePosition: l.linePosition,
+	}
 }
 
 func (l *Lexer) readIdentifier() string {
