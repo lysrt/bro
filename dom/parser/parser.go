@@ -25,6 +25,20 @@ func (p *Parser) nextToken() {
 	p.peekToken = p.l.NextToken()
 }
 
-func (p *Parser) ParseProgram() *dom.Document {
+func (p *Parser) Parse() *dom.Document {
+	doc := &dom.Document{}
+	doc.Children = []dom.Node{}
+
+	for p.curToken.Type != lexer.TokenEOF {
+		n := p.parseNode()
+		if n != nil {
+			doc.Children = append(doc.Children, n)
+		}
+		p.nextToken()
+	}
+	return nil
+}
+
+func (p *Parser) parseNode() dom.Node {
 	return nil
 }

@@ -18,7 +18,7 @@ func TestDOMElement(t *testing.T) {
 	l := lexer.New(input)
 	p := New(l)
 
-	doc := p.ParseProgram()
+	doc := p.Parse()
 	if doc == nil {
 		t.Fatal("fail to parse DOM")
 	}

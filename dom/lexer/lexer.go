@@ -6,14 +6,17 @@ type lexFn func(l *Lexer) (Token, lexFn)
 
 // Lexer represents an HTML tokenizer.
 type Lexer struct {
-	input            string
-	position         int // current position in the input (current char)
-	readPosition     int // current reading position in the input (after current char)
+	input        string
+	position     int // current position in the input (current char)
+	readPosition int // current reading position in the input (after current char)
+
 	line             int
+	lineFound        bool // delay line increment after newline char
 	linePosition     int
 	lineReadPosition int
-	ch               byte // current char
-	lex              lexFn
+
+	ch  byte // current char
+	lex lexFn
 }
 
 // New instanciates a new Lexer.
@@ -29,15 +32,16 @@ func (l *Lexer) readChar() {
 	} else {
 		l.ch = l.input[l.readPosition]
 	}
-	if l.ch == '\n' {
+	if l.lineFound {
 		l.line++
-		l.linePosition = -1
-		l.lineReadPosition = -1
+		l.linePosition = 0
+		l.lineReadPosition = 0
 	}
 	l.position = l.readPosition
 	l.readPosition++
 	l.linePosition = l.lineReadPosition
 	l.lineReadPosition++
+	l.lineFound = l.ch == '\n'
 }
 
 // NextToken returns the next token read by the lexer.
@@ -92,26 +96,22 @@ func lexNode(l *Lexer) (tok Token, fn lexFn) {
 func lexText(l *Lexer) (tok Token, fn lexFn) {
 	if l.ch == 0 {
 		tok.Type = TokenEOF
+		fn = lexText
 		return
 	}
-	whitespace := 0
-	position := l.position
+	tok = newToken(l)
 	for {
-		l.readChar()
-		if isWhitespace(l.ch) {
-			whitespace++
-		}
 		if l.ch == '<' || l.ch == 0 {
-			tok = newToken(l)
 			tok.Type = TokenText
-			tok.Literal = l.input[position:l.position]
+			tok.Literal = l.input[tok.Position:l.position]
 			fn = lexNode
 			break
 		}
 		//TODO: detect HTML character
+		l.readChar()
 	}
 	// if the text node is empty we call the next lexer
-	if l.position-position == whitespace+1 {
+	if l.position-tok.Position == 0 {
 		tok, fn = fn(l)
 	}
 	return

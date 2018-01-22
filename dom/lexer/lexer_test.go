@@ -4,10 +4,8 @@ import "testing"
 
 func TestNextToken(t *testing.T) {
 	input := `<!doctype html>
-<html class="app--red">
-<body class='app__container'>
+<html class="app--red" data-awesome='true'>
 	Hello world!
-</body>
 </html>`
 
 	tests := []struct {
@@ -19,27 +17,22 @@ func TestNextToken(t *testing.T) {
 		{Type: TokenIdent, Literal: "doctype"},
 		{Type: TokenIdent, Literal: "html"},
 		{Type: TokenLBracket, Literal: ">"},
+		{Type: TokenText, Literal: "\n"},
 		{Type: TokenRBracket, Literal: "<"},
 		{Type: TokenIdent, Literal: "html"},
 		{Type: TokenIdent, Literal: "class"},
 		{Type: TokenEqual, Literal: "="},
 		{Type: TokenString, Literal: "app--red"},
-		{Type: TokenLBracket, Literal: ">"},
-		{Type: TokenRBracket, Literal: "<"},
-		{Type: TokenIdent, Literal: "body"},
-		{Type: TokenIdent, Literal: "class"},
+		{Type: TokenIdent, Literal: "data-awesome"},
 		{Type: TokenEqual, Literal: "="},
-		{Type: TokenString, Literal: "app__container"},
+		{Type: TokenString, Literal: "true"},
 		{Type: TokenLBracket, Literal: ">"},
 		{Type: TokenText, Literal: "\n\tHello world!\n"},
 		{Type: TokenRBracket, Literal: "<"},
 		{Type: TokenSlash, Literal: "/"},
-		{Type: TokenIdent, Literal: "body"},
-		{Type: TokenLBracket, Literal: ">"},
-		{Type: TokenRBracket, Literal: "<"},
-		{Type: TokenSlash, Literal: "/"},
 		{Type: TokenIdent, Literal: "html"},
 		{Type: TokenLBracket, Literal: ">"},
+		{Type: TokenEOF, Literal: ""},
 	}
 
 	l := New(input)
@@ -65,6 +58,7 @@ func TestNextToken_position(t *testing.T) {
 		{Literal: "=", Position: 12, Line: 0, LinePosition: 12},
 		{Literal: "apple--red", Position: 13, Line: 0, LinePosition: 13},
 		{Literal: ">", Position: 25, Line: 0, LinePosition: 25},
+		{Literal: "\n", Position: 26, Line: 0, LinePosition: 26},
 		{Literal: "<", Position: 27, Line: 1, LinePosition: 0},
 		{Literal: "/", Position: 28, Line: 1, LinePosition: 1},
 		{Literal: "apple", Position: 29, Line: 1, LinePosition: 2},
