@@ -8,12 +8,7 @@ type Node interface {
 	NextSibling() Node
 }
 
-type Attribute struct {
-	Key string
-	Val string
-}
-
-type HTMLNode struct {
+type baseNode struct {
 	parent      Node
 	firstChild  Node
 	lastChild   Node
@@ -21,23 +16,34 @@ type HTMLNode struct {
 	nextSibling Node
 }
 
-func (n *HTMLNode) Parent() Node      { return n.parent }
-func (n *HTMLNode) FirstChild() Node  { return n.firstChild }
-func (n *HTMLNode) LastChild() Node   { return n.lastChild }
-func (n *HTMLNode) PrevSibling() Node { return n.prevSibling }
-func (n *HTMLNode) NextSibling() Node { return n.nextSibling }
+func (n *baseNode) Parent() Node      { return n.parent }
+func (n *baseNode) FirstChild() Node  { return n.firstChild }
+func (n *baseNode) LastChild() Node   { return n.lastChild }
+func (n *baseNode) PrevSibling() Node { return n.prevSibling }
+func (n *baseNode) NextSibling() Node { return n.nextSibling }
 
-func (n *HTMLNode) SetParent(nn Node)      { n.parent = nn }
-func (n *HTMLNode) SetFirstChild(nn Node)  { n.firstChild = nn }
-func (n *HTMLNode) SetLastChild(nn Node)   { n.lastChild = nn }
-func (n *HTMLNode) SetPrevSibling(nn Node) { n.prevSibling = nn }
-func (n *HTMLNode) SetNextSibling(nn Node) { n.nextSibling = nn }
+func (n *baseNode) SetParent(nn Node)      { n.parent = nn }
+func (n *baseNode) SetFirstChild(nn Node)  { n.firstChild = nn }
+func (n *baseNode) SetLastChild(nn Node)   { n.lastChild = nn }
+func (n *baseNode) SetPrevSibling(nn Node) { n.prevSibling = nn }
+func (n *baseNode) SetNextSibling(nn Node) { n.nextSibling = nn }
 
-type TextNode struct {
-	HTMLNode
+type Attribute struct {
+	Key string
+	Val string
 }
 
-type ElementNode struct {
-	HTMLNode
+type Document struct {
+	baseNode
+	Children []Node
+}
+
+type Text struct {
+	baseNode
+}
+
+type Element struct {
+	baseNode
+	Tag        string
 	Attributes []Attribute
 }

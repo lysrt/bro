@@ -25,6 +25,6 @@ func (p *Parser) nextToken() {
 	p.peekToken = p.l.NextToken()
 }
 
-func (p *Parser) ParseProgram() dom.Node {
+func (p *Parser) ParseProgram() *dom.Document {
 	return nil
 }
