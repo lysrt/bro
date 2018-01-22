@@ -4,16 +4,19 @@ import "fmt"
 
 type lexFn func(l *Lexer) (Token, lexFn)
 
+// Lexer represents an HTML tokenizer.
 type Lexer struct {
-	input        string
-	position     int // current position in the input (current char)
-	readPosition int // current reading position in the input (after current char)
-	line         int
-	linePosition int
-	ch           byte // current char
-	lex          lexFn
+	input            string
+	position         int // current position in the input (current char)
+	readPosition     int // current reading position in the input (after current char)
+	line             int
+	linePosition     int
+	lineReadPosition int
+	ch               byte // current char
+	lex              lexFn
 }
 
+// New instanciates a new Lexer.
 func New(input string) *Lexer {
 	l := &Lexer{input: input, lex: lexNode}
 	l.readChar()
@@ -27,25 +30,29 @@ func (l *Lexer) readChar() {
 		l.ch = l.input[l.readPosition]
 	}
 	if l.ch == '\n' {
-		l.line = 0
-		l.linePosition = 0
+		l.line++
+		l.linePosition = -1
+		l.lineReadPosition = -1
 	}
 	l.position = l.readPosition
 	l.readPosition++
-	l.linePosition++
+	l.linePosition = l.lineReadPosition
+	l.lineReadPosition++
 }
 
+// NextToken returns the next token read by the lexer.
 func (l *Lexer) NextToken() Token {
 	tok, fn := l.lex(l)
 	l.lex = fn
 	return tok
 }
 
+// lexNode tokenizes an HTML node.
 func lexNode(l *Lexer) (tok Token, fn lexFn) {
-	fn = lexNode
-
 	l.skipWhitespace()
 
+	tok = newToken(l)
+	fn = lexNode
 	switch l.ch {
 	case '!':
 		tok.Type = TokenBang
@@ -73,22 +80,22 @@ func lexNode(l *Lexer) (tok Token, fn lexFn) {
 			tok.Type = TokenIdent
 			tok.Literal = l.readIdentifier()
 			return
-		} else {
-			tok.Type = TokenError
-			tok.Literal = fmt.Sprintf("illegal character %q", l.ch)
 		}
+		tok.Type = TokenError
+		tok.Literal = fmt.Sprintf("illegal character %q", l.ch)
 	}
 	l.readChar()
 	return
 }
 
+// lexText tokenizes the text between two HTML nodes.
 func lexText(l *Lexer) (tok Token, fn lexFn) {
-	position := l.position
 	if l.ch == 0 {
 		tok.Type = TokenEOF
 		return
 	}
 	whitespace := 0
+	position := l.position
 	for {
 		l.readChar()
 		if isWhitespace(l.ch) {
@@ -103,6 +110,7 @@ func lexText(l *Lexer) (tok Token, fn lexFn) {
 		}
 		//TODO: detect HTML character
 	}
+	// if the text node is empty we call the next lexer
 	if l.position-position == whitespace+1 {
 		tok, fn = fn(l)
 	}

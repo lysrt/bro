@@ -53,3 +53,35 @@ func TestNextToken(t *testing.T) {
 		}
 	}
 }
+
+func TestNextToken_position(t *testing.T) {
+	input := `<apple class="apple--red">
+</apple>`
+
+	tests := []Token{
+		{Literal: "<", Position: 0, Line: 0, LinePosition: 0},
+		{Literal: "apple", Position: 1, Line: 0, LinePosition: 1},
+		{Literal: "class", Position: 7, Line: 0, LinePosition: 7},
+		{Literal: "=", Position: 12, Line: 0, LinePosition: 12},
+		{Literal: "apple--red", Position: 13, Line: 0, LinePosition: 13},
+		{Literal: ">", Position: 25, Line: 0, LinePosition: 25},
+		{Literal: "<", Position: 27, Line: 1, LinePosition: 0},
+		{Literal: "/", Position: 28, Line: 1, LinePosition: 1},
+		{Literal: "apple", Position: 29, Line: 1, LinePosition: 2},
+		{Literal: ">", Position: 34, Line: 1, LinePosition: 7},
+	}
+
+	l := New(input)
+	for i, tt := range tests {
+		tok := l.NextToken()
+		if tok.Position != tt.Position {
+			t.Fatalf("tests[%d]: bad position. expected=%d got=%d", i, tt.Position, tok.Position)
+		}
+		if tok.Line != tt.Line {
+			t.Fatalf("tests[%d]: bad line. expected=%d got=%d", i, tt.Line, tok.Line)
+		}
+		if tok.LinePosition != tt.LinePosition {
+			t.Fatalf("tests[%d]: bad line position. expected=%d got=%d", i, tt.LinePosition, tok.LinePosition)
+		}
+	}
+}
