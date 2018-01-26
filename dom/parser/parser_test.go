@@ -9,7 +9,7 @@ import (
 
 func TestDOMElement(t *testing.T) {
 	input := `<a></a><b></b><c></c>`
-	tests := []*dom.Element{
+	tests := []*dom.Node{
 		{Tag: "a"},
 		{Tag: "b"},
 		{Tag: "c"},
@@ -22,16 +22,13 @@ func TestDOMElement(t *testing.T) {
 	if doc == nil {
 		t.Fatal("fail to parse DOM")
 	}
-	if len(doc.Children) != len(tests) {
-		t.Fatalf("invalid children count. expected=%d got=%d", len(tests), len(doc.Children))
+	if doc.FirstChild == nil {
+		t.Fatal("first child missing")
 	}
+	n := doc.FirstChild
 	for i, tt := range tests {
-		e, ok := doc.Children[i].(*dom.Element)
-		if !ok {
-			t.Fatalf("tests[%d]: invalid node type. expected=%T got=%T", i, tt, doc.Children[i])
-		}
-		if e.Tag != tt.Tag {
-			t.Fatalf("tests[%d]: invalid tag. expected=%q got=%q", i, tt.Tag, e.Tag)
+		if n.Tag != tt.Tag {
+			t.Fatalf("tests[%d]: invalid tag. expected=%q got=%q", i, tt.Tag, n.Tag)
 		}
 	}
 }
