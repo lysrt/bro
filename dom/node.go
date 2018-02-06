@@ -1,10 +1,10 @@
 package dom
 
 const (
-	ErrorNode   NodeType = "error"
-	TextNode             = "text"
-	ElementNode          = "element"
-	CommentNode          = "comment"
+	NodeError   NodeType = "error"
+	NodeTest             = "text"
+	NodeElement          = "element"
+	NodeComment          = "comment"
 )
 
 type NodeType string

@@ -18,15 +18,16 @@ func TestDOMElement(t *testing.T) {
 	l := lexer.New(input)
 	p := New(l)
 
-	doc := p.Parse()
-	if doc == nil {
+	nodes := p.Parse()
+	t.Log(p.Errors())
+	if nodes == nil {
 		t.Fatal("fail to parse DOM")
 	}
-	if doc.FirstChild == nil {
-		t.Fatal("first child missing")
+	if len(nodes) != len(tests) {
+		t.Fatal("invalide node count. expected=%d got=%d", len(tests), len(nodes))
 	}
-	n := doc.FirstChild
 	for i, tt := range tests {
+		n := nodes[i]
 		if n.Tag != tt.Tag {
 			t.Fatalf("tests[%d]: invalid tag. expected=%q got=%q", i, tt.Tag, n.Tag)
 		}
