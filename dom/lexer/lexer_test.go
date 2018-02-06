@@ -12,13 +12,13 @@ func TestNextToken(t *testing.T) {
 		Type    TokenType
 		Literal string
 	}{
-		{Type: TokenRBracket, Literal: "<"},
+		{Type: TokenLBracket, Literal: "<"},
 		{Type: TokenBang, Literal: "!"},
 		{Type: TokenIdent, Literal: "doctype"},
 		{Type: TokenIdent, Literal: "html"},
-		{Type: TokenLBracket, Literal: ">"},
+		{Type: TokenRBracket, Literal: ">"},
 		{Type: TokenText, Literal: "\n"},
-		{Type: TokenRBracket, Literal: "<"},
+		{Type: TokenLBracket, Literal: "<"},
 		{Type: TokenIdent, Literal: "html"},
 		{Type: TokenIdent, Literal: "class"},
 		{Type: TokenEqual, Literal: "="},
@@ -26,12 +26,12 @@ func TestNextToken(t *testing.T) {
 		{Type: TokenIdent, Literal: "data-awesome"},
 		{Type: TokenEqual, Literal: "="},
 		{Type: TokenString, Literal: "true"},
-		{Type: TokenLBracket, Literal: ">"},
+		{Type: TokenRBracket, Literal: ">"},
 		{Type: TokenText, Literal: "\n\tHello world!\n"},
-		{Type: TokenRBracket, Literal: "<"},
+		{Type: TokenLBracket, Literal: "<"},
 		{Type: TokenSlash, Literal: "/"},
 		{Type: TokenIdent, Literal: "html"},
-		{Type: TokenLBracket, Literal: ">"},
+		{Type: TokenRBracket, Literal: ">"},
 		{Type: TokenEOF, Literal: ""},
 	}
 

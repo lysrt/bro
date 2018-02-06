@@ -24,7 +24,7 @@ func TestDOMElement(t *testing.T) {
 		t.Fatal("fail to parse DOM")
 	}
 	if len(nodes) != len(tests) {
-		t.Fatal("invalide node count. expected=%d got=%d", len(tests), len(nodes))
+		t.Fatalf("invalide node count. expected=%d got=%d", len(tests), len(nodes))
 	}
 	for i, tt := range tests {
 		n := nodes[i]

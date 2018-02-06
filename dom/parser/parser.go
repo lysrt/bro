@@ -7,7 +7,9 @@ import (
 	"github.com/lysrt/bro/dom/lexer"
 )
 
-const NodeClosingElement dom.NodeType = "closing element"
+// nodeClosingElement is a special node for HTML closing element.
+// It should not escapes outside of the parser.
+const nodeClosingElement dom.NodeType = "closing element"
 
 // Error represents a parser error.
 type Error struct {
@@ -43,6 +45,7 @@ func New(l *lexer.Lexer) *Parser {
 	return p
 }
 
+// Errors returns a list of error encounter during parsing.
 func (p *Parser) Errors() []Error {
 	return p.errors
 }
@@ -73,11 +76,11 @@ func (p *Parser) parseNode() *dom.Node {
 			return p.parseClosingElement()
 		} else if p.peekTokenIs(lexer.TokenIdent) {
 			return p.parseElement()
-		} else {
-			p.unexpectedPeekError()
-			p.nextToken()
-			return nil
 		}
+		p.addError(p.peekToken, "unexpected peek token: %q", p.peekToken.Type)
+		p.nextToken()
+	default:
+		p.addError(p.curToken, "unexpected token: %q", p.curToken.Type)
 	}
 	return nil
 }
@@ -109,7 +112,7 @@ func (p *Parser) parseElement() *dom.Node {
 			p.addError(startToken, "missing closing element")
 			break
 		}
-		if n.Type == NodeClosingElement {
+		if n.Type == nodeClosingElement {
 			last := p.elements[len(p.elements)-1]
 			if last.Tag != n.Tag {
 				p.addError(startToken, "unexpected closing element. expected=%q got=%q", last.Tag, n.Tag)
@@ -136,7 +139,7 @@ func (p *Parser) parseClosingElement() *dom.Node {
 		return nil
 	}
 	n := &dom.Node{
-		Type: NodeClosingElement,
+		Type: nodeClosingElement,
 		Tag:  p.curToken.Literal,
 	}
 
@@ -160,18 +163,13 @@ func (p *Parser) expectsPeek(t lexer.TokenType) bool {
 	if p.peekTokenIs(t) {
 		p.nextToken()
 		return true
-	} else {
-		p.peekError(t)
-		return false
 	}
+	p.peekError(t)
+	return false
 }
 
 func (p *Parser) peekError(t lexer.TokenType) {
 	p.addError(p.peekToken, "expected next token to be %s, got %s instead", t, p.peekToken.Type)
-}
-
-func (p *Parser) unexpectedPeekError() {
-	p.addError(p.peekToken, "unexpected token %s", p.peekToken.Type)
 }
 
 func (p *Parser) addError(tok lexer.Token, format string, a ...interface{}) {

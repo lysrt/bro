@@ -14,8 +14,8 @@ const (
 	TokenBang     = "!"
 	TokenEqual    = "="
 	TokenSlash    = "/"
-	TokenLBracket = ">" // forward angle bracket
-	TokenRBracket = "<" // backward angle bracket
+	TokenRBracket = ">" // forward angle bracket
+	TokenLBracket = "<" // backward angle bracket
 )
 
 type TokenType string

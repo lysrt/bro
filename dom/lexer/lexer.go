@@ -71,10 +71,10 @@ func lexNode(l *Lexer) (tok Token, fn lexFn) {
 		tok.Type = TokenString
 		tok.Literal = l.readString()
 	case '<':
-		tok.Type = TokenRBracket
+		tok.Type = TokenLBracket
 		tok.Literal = string(l.ch)
 	case '>':
-		tok.Type = TokenLBracket
+		tok.Type = TokenRBracket
 		tok.Literal = string(l.ch)
 		fn = lexText
 	case '0':
