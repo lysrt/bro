@@ -124,7 +124,9 @@ func (p *Parser) parseElement() *dom.Node {
 			root.FirstChild = n
 		}
 		n.PrevSibling = root.LastChild
-		root.LastChild.NextSibling = n
+		if root.LastChild != nil {
+			root.LastChild.NextSibling = n
+		}
 		root.LastChild = n
 	}
 
