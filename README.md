@@ -2,8 +2,19 @@
 
 A toy browser engine written in Go, inspired by [Robinson](https://limpet.net/mbrubeck/2014/08/08/toy-layout-engine-1.html).
 
-Also contains a CSS Lexer / Parser: `bro/css`
+Also contains:
+ * a CSS Lexer / Parser: `bro/css`
+ * a HTML Lexer / Parser: `bro/dom`
 
+Available CSS propreties:
+ * background-color
+ * height
+ * width
+ * margin-left, margin-right, margin-top, margin-bottom
+ * padding-left, padding-right, padding-top, padding-bottom
+ * border-color
+ * border-left-width, border-right-width, border-top-width, border-bottom-width
+ 
 ## Example usage
 
 `input.html`
@@ -45,7 +56,7 @@ Command
 
 `output.png`
 
-![Example output](out.png)
+![Example output](example.png)
 
 ## TODO
 
