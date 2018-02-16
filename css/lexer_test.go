@@ -6,16 +6,18 @@ import (
 
 func TestNextToken(t *testing.T) {
 	input := `
-		.name, a {background-color: #FF00FF; padding: 12em;}
+		* .name, a {background-color: #FF00FF; padding: 12em;}
 		#figure {
 			color : rgb(128, 0, 0);
 			margin: 0;
 		}
 		/*    comment example*/
 		>
+		/#
 	`
 
 	tests := []CSSToken{
+		{STAR, "*"},
 		{DOT, "."},
 		{IDENTIFIER, "name"},
 		{COMMA, ","},
@@ -53,6 +55,7 @@ func TestNextToken(t *testing.T) {
 		{RBRACE, "}"},
 		{COMMENT, "comment example"},
 		{ILLEGAL, ">"},
+		{ILLEGAL, "/"},
 	}
 
 	l := NewLexer(input)

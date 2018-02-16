@@ -1,6 +1,8 @@
 package css
 
-import "strings"
+import (
+	"strings"
+)
 
 type CSSTokenType string
 
@@ -44,13 +46,16 @@ func NewLexer(input string) *Lexer {
 }
 
 func (l *Lexer) readChar() {
-	if l.readPosition >= len(l.input) {
-		l.char = 0
-	} else {
-		l.char = l.input[l.readPosition]
-	}
+	l.char = l.peekChar()
 	l.position = l.readPosition
 	l.readPosition += 1
+}
+
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) {
+		return 0
+	}
+	return l.input[l.readPosition]
 }
 
 func (l *Lexer) skipWhitespace() {
@@ -63,7 +68,6 @@ func (l *Lexer) NextToken() CSSToken {
 	var tok CSSToken
 
 	l.skipWhitespace()
-
 	switch l.char {
 	case '*':
 		tok = newToken(STAR, l.char)
@@ -86,7 +90,7 @@ func (l *Lexer) NextToken() CSSToken {
 	case ')':
 		tok = newToken(RPARENTHESIS, l.char)
 	case '/':
-		next := l.input[l.readPosition]
+		next := l.peekChar()
 		if next != '*' {
 			tok = newToken(ILLEGAL, l.char)
 		} else {
