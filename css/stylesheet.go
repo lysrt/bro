@@ -59,6 +59,12 @@ func (s Selector) String() string {
 	return r
 }
 
+// Specificity represents the specificity of a CSS Rule.
+// It is used only to compute rule precedence.
+type Specificity struct {
+	A, B, C int
+}
+
 // Specificity computes and returns the specificity of a selector.
 func (s *Selector) Specificity() Specificity {
 	return Specificity{
@@ -117,10 +123,4 @@ const (
 type Color struct {
 	Name       string
 	A, R, G, B uint8
-}
-
-// Specificity represents the specificity of a Rule.
-// It is use to compute rule precedence.
-type Specificity struct {
-	A, B, C int
 }
