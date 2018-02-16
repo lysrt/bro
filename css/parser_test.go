@@ -1,7 +1,6 @@
 package css
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 )
@@ -15,23 +14,14 @@ var SelectorTests = []struct {
 	{".class", Selector{Classes: []string{"class"}}, false},
 	{"tag", Selector{TagName: "tag"}, false},
 	{"..", Selector{}, true},
-	{"#-", Selector{}, true},
+	{"#/", Selector{}, true},
 }
 
 func TestSelector(t *testing.T) {
 	for _, tt := range SelectorTests {
 		p := NewParser(strings.NewReader(tt.input))
 
-		selector, err := p.parseSelector()
-
-		isErr := err != nil
-		if isErr != tt.isErr {
-			t.Fatalf("%s - expected error to be %v, actual:  %v", tt.input, tt.isErr, isErr)
-		}
-
-		if err != nil {
-			return
-		}
+		selector := p.parseSelector()
 
 		actual := selector
 		if actual.ID != tt.expected.ID {
@@ -45,7 +35,6 @@ func TestSelector(t *testing.T) {
 		}
 	}
 }
-
 func TestSelectors(t *testing.T) {
 	p := NewParser(strings.NewReader("#id, .class, tag"))
 
@@ -55,29 +44,45 @@ func TestSelectors(t *testing.T) {
 	}
 }
 
-func TestDeclaration(t *testing.T) {
+func TestKeywordDeclaration(t *testing.T) {
+	p := NewParser(strings.NewReader("margin: auto;"))
+
+	declaration := p.parseDeclaration()
+	if declaration.Name != "margin" {
+		t.Fatal("wrong keyword declaration name")
+	}
+
+	expected := Value{Keyword: "auto"}
+	if declaration.Value != expected {
+		t.Fatal("wrong keyword declaration value")
+	}
+}
+
+func TestColorDeclaration(t *testing.T) {
 	p := NewParser(strings.NewReader("color: #FFFFFF;"))
 
 	declaration := p.parseDeclaration()
 	if declaration.Name != "color" {
-		t.Fatal("wrong declaration name")
+		t.Fatal("wrong color declaration name")
 	}
 
-	fmt.Println("val:", declaration.Value)
 	expected := Value{Color: Color{"", 255, 255, 255, 255}}
 	if declaration.Value != expected {
-		t.Fatal("wrong declaration value")
+		t.Fatal("wrong color declaration value")
 	}
 }
 
-func TestValue(t *testing.T) {
-	p := NewParser(strings.NewReader("center"))
+func TestLengthDeclaration(t *testing.T) {
+	p := NewParser(strings.NewReader("size: 50.5 px;"))
 
-	value := p.parseValue()
+	declaration := p.parseDeclaration()
+	if declaration.Name != "size" {
+		t.Fatal("wrong length declaration name")
+	}
 
-	expected := Value{Keyword: "center"}
-	if value != expected {
-		t.Fatal("wrong value")
+	expected := Value{Length: Length{Quantity: 50.5, Unit: Px}}
+	if declaration.Value != expected {
+		t.Fatal("wrong length declaration value")
 	}
 }
 
