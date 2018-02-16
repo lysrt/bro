@@ -1,53 +1,54 @@
-package main
+package layout
 
 import (
 	"fmt"
 
 	"github.com/lysrt/bro/css"
+	"github.com/lysrt/bro/style"
 )
 
 type Dimensions struct {
 	// Position of the content area relative to the document origin:
-	content Rect
+	Content Rect
 
 	// Surrounding edges:
-	padding, border, margin EdgeSizes
+	padding, Border, margin EdgeSizes
 }
 
 // marginBox returns the area covered by the content area plus padding, borders, and margin
 func (d Dimensions) marginBox() Rect {
-	return d.borderBox().expandedBy(d.margin)
+	return d.BorderBox().expandedBy(d.margin)
 }
 
-// borderBox returns the area covered by the content area plus padding and borders
-func (d Dimensions) borderBox() Rect {
-	return d.paddingBox().expandedBy(d.border)
+// BorderBox returns the area covered by the content area plus padding and borders
+func (d Dimensions) BorderBox() Rect {
+	return d.paddingBox().expandedBy(d.Border)
 }
 
 // paddingBox returns the area covered by the content area plus its padding
 func (d Dimensions) paddingBox() Rect {
-	return d.content.expandedBy(d.padding)
+	return d.Content.expandedBy(d.padding)
 }
 
 type Rect struct {
-	x, y, width, height float64
+	X, Y, Width, Height float64
 }
 
 func (r Rect) String() string {
-	return fmt.Sprintf("(%.f,%.f : w:%.f, h:%.f)", r.x, r.y, r.width, r.height)
+	return fmt.Sprintf("(%.f,%.f : w:%.f, h:%.f)", r.X, r.Y, r.Width, r.Height)
 }
 
 func (r Rect) expandedBy(edge EdgeSizes) Rect {
 	return Rect{
-		x:      r.x - edge.left,
-		y:      r.y - edge.top,
-		width:  r.width + edge.left + edge.right,
-		height: r.height + edge.top + edge.bottom,
+		X:      r.X - edge.Left,
+		Y:      r.Y - edge.Top,
+		Width:  r.Width + edge.Left + edge.Right,
+		Height: r.Height + edge.Top + edge.Bottom,
 	}
 }
 
 type EdgeSizes struct {
-	left, right, top, bottom float64
+	Left, Right, Top, Bottom float64
 }
 
 type BoxType string
@@ -59,29 +60,29 @@ const (
 )
 
 type LayoutBox struct {
-	dimensions Dimensions
-	boxType    BoxType
-	styledNode *StyledNode
-	children   []*LayoutBox
+	Dimensions Dimensions
+	BoxType    BoxType
+	StyledNode *style.StyledNode
+	Children   []*LayoutBox
 }
 
-func newLayoutBox(boxType BoxType, styledNode *StyledNode) *LayoutBox {
+func newLayoutBox(boxType BoxType, styledNode *style.StyledNode) *LayoutBox {
 	var children []*LayoutBox
 	return &LayoutBox{
-		boxType:    boxType,
-		styledNode: styledNode,
-		children:   children,
+		BoxType:    boxType,
+		StyledNode: styledNode,
+		Children:   children,
 	}
 }
 
-func GenerateLayoutTree(styleTree *StyledNode) *LayoutBox {
+func GenerateLayoutTree(styleTree *style.StyledNode) *LayoutBox {
 	var boxType BoxType
 	switch styleTree.Display() {
-	case Inline:
+	case style.Inline:
 		boxType = InlineNode
-	case Block:
+	case style.Block:
 		boxType = BlockNode
-	case None:
+	case style.None:
 		panic("Root StyledNode has display:none")
 	}
 
@@ -89,12 +90,12 @@ func GenerateLayoutTree(styleTree *StyledNode) *LayoutBox {
 
 	for _, child := range styleTree.Children {
 		switch child.Display() {
-		case Inline:
+		case style.Inline:
 			ic := root.getInlineContainer()
-			ic.children = append(ic.children, GenerateLayoutTree(child))
-		case Block:
-			root.children = append(root.children, GenerateLayoutTree(child))
-		case None:
+			ic.Children = append(ic.Children, GenerateLayoutTree(child))
+		case style.Block:
+			root.Children = append(root.Children, GenerateLayoutTree(child))
+		case style.None:
 			// Skip
 		}
 	}
@@ -104,7 +105,7 @@ func GenerateLayoutTree(styleTree *StyledNode) *LayoutBox {
 
 // If a block node contains an inline child:
 func (box *LayoutBox) getInlineContainer() *LayoutBox {
-	switch box.boxType {
+	switch box.BoxType {
 	case InlineNode:
 		fallthrough
 	case AnonymousBlock:
@@ -112,25 +113,25 @@ func (box *LayoutBox) getInlineContainer() *LayoutBox {
 	case BlockNode:
 		// If we've just generated an anonymous block box, keep using it.
 		// Otherwise, create a new one.
-		if len(box.children) == 0 {
-			box.children = append(box.children, newLayoutBox(AnonymousBlock, nil))
-			return box.children[0]
+		if len(box.Children) == 0 {
+			box.Children = append(box.Children, newLayoutBox(AnonymousBlock, nil))
+			return box.Children[0]
 		}
 
-		lastChild := box.children[len(box.children)-1]
-		switch lastChild.boxType {
+		lastChild := box.Children[len(box.Children)-1]
+		switch lastChild.BoxType {
 		case AnonymousBlock:
 			return lastChild
 		default:
-			box.children = append(box.children, newLayoutBox(AnonymousBlock, nil))
-			return box.children[len(box.children)-1]
+			box.Children = append(box.Children, newLayoutBox(AnonymousBlock, nil))
+			return box.Children[len(box.Children)-1]
 		}
 	}
 	panic("No more cases to switch")
 }
 
 func (box *LayoutBox) Layout(containingBlock Dimensions) {
-	switch box.boxType {
+	switch box.BoxType {
 	case InlineNode:
 		// TODO
 		panic("Inline Node Unimplemented")
@@ -156,7 +157,7 @@ func (box *LayoutBox) layoutBlock(containingBlock Dimensions) {
 }
 
 func (box *LayoutBox) calculateWidth(containingBlock Dimensions) {
-	style := box.styledNode
+	style := box.StyledNode
 
 	// width has initial value auto
 	auto := css.Value{Keyword: "auto"}
@@ -210,7 +211,7 @@ func (box *LayoutBox) calculateWidth(containingBlock Dimensions) {
 
 	// Checking if the box is too big
 	// If width is not auto and the total is wider than the container, treat auto margins as 0.
-	if width != auto && total > containingBlock.content.width {
+	if width != auto && total > containingBlock.Content.Width {
 		if marginLeft == auto {
 			marginLeft = css.Value{Length: css.Length{Quantity: 0.0, Unit: css.Px}}
 		}
@@ -220,7 +221,7 @@ func (box *LayoutBox) calculateWidth(containingBlock Dimensions) {
 	}
 
 	// Check for over or underflow, and adjust "auto" dimensions accordingly
-	underflow := containingBlock.content.width - total
+	underflow := containingBlock.Content.Width - total
 
 	widthAuto := width == auto
 	marginLeftAuto := marginLeft == auto
@@ -259,20 +260,20 @@ func (box *LayoutBox) calculateWidth(containingBlock Dimensions) {
 		marginRight = css.Value{Length: css.Length{Quantity: underflow / 2.0, Unit: css.Px}}
 	}
 
-	box.dimensions.content.width = width.ToPx()
+	box.Dimensions.Content.Width = width.ToPx()
 
-	box.dimensions.padding.left = paddingLeft.ToPx()
-	box.dimensions.padding.right = paddingRight.ToPx()
+	box.Dimensions.padding.Left = paddingLeft.ToPx()
+	box.Dimensions.padding.Right = paddingRight.ToPx()
 
-	box.dimensions.border.left = borderLeft.ToPx()
-	box.dimensions.border.right = borderRight.ToPx()
+	box.Dimensions.Border.Left = borderLeft.ToPx()
+	box.Dimensions.Border.Right = borderRight.ToPx()
 
-	box.dimensions.margin.left = marginLeft.ToPx()
-	box.dimensions.margin.right = marginRight.ToPx()
+	box.Dimensions.margin.Left = marginLeft.ToPx()
+	box.Dimensions.margin.Right = marginRight.ToPx()
 }
 
 func (box *LayoutBox) calculatePosition(containingBlock Dimensions) {
-	style := box.styledNode
+	style := box.StyledNode
 
 	// margin, border, and padding have initial value 0
 	zero := css.Value{Length: css.Length{Quantity: 0.0, Unit: css.Px}}
@@ -313,36 +314,36 @@ func (box *LayoutBox) calculatePosition(containingBlock Dimensions) {
 		}
 	}
 
-	box.dimensions.margin.top = marginTop.ToPx()
-	box.dimensions.margin.bottom = marginBottom.ToPx()
-	box.dimensions.border.top = borderTop.ToPx()
-	box.dimensions.border.bottom = borderBottom.ToPx()
-	box.dimensions.padding.top = paddingTop.ToPx()
-	box.dimensions.padding.bottom = paddingBottom.ToPx()
+	box.Dimensions.margin.Top = marginTop.ToPx()
+	box.Dimensions.margin.Bottom = marginBottom.ToPx()
+	box.Dimensions.Border.Top = borderTop.ToPx()
+	box.Dimensions.Border.Bottom = borderBottom.ToPx()
+	box.Dimensions.padding.Top = paddingTop.ToPx()
+	box.Dimensions.padding.Bottom = paddingBottom.ToPx()
 
-	box.dimensions.content.x = containingBlock.content.x +
-		box.dimensions.margin.left + box.dimensions.border.left + box.dimensions.padding.left
+	box.Dimensions.Content.X = containingBlock.Content.X +
+		box.Dimensions.margin.Left + box.Dimensions.Border.Left + box.Dimensions.padding.Left
 
 	// Position the box below all the previous boxes in the container.
 	// Making sure the block is below content.height to stack components in the box
-	box.dimensions.content.y = containingBlock.content.height + containingBlock.content.y +
-		box.dimensions.margin.top + box.dimensions.border.top + box.dimensions.padding.top
+	box.Dimensions.Content.Y = containingBlock.Content.Height + containingBlock.Content.Y +
+		box.Dimensions.margin.Top + box.Dimensions.Border.Top + box.Dimensions.padding.Top
 }
 
 func (box *LayoutBox) layoutBlockChildren() {
-	for _, child := range box.children {
-		child.Layout(box.dimensions)
+	for _, child := range box.Children {
+		child.Layout(box.Dimensions)
 		// Track the height so each child is laid out below the previous content
-		box.dimensions.content.height = box.dimensions.content.height + child.dimensions.marginBox().height
+		box.Dimensions.Content.Height = box.Dimensions.Content.Height + child.Dimensions.marginBox().Height
 	}
 }
 
 func (box *LayoutBox) calculateHeight() {
 	// If the height is set to an explicit length, use that exact length
 	// Otherwise, just keep the value set by layoutBlockChildren()
-	if height, ok := box.styledNode.Value("height"); ok {
+	if height, ok := box.StyledNode.Value("height"); ok {
 		if height.Length.Unit == css.Px {
-			box.dimensions.content.height = height.Length.Quantity
+			box.Dimensions.Content.Height = height.Length.Quantity
 		}
 	}
 }

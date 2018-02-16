@@ -9,6 +9,9 @@ import (
 
 	"github.com/lysrt/bro/css"
 	"github.com/lysrt/bro/dom"
+	"github.com/lysrt/bro/layout"
+	"github.com/lysrt/bro/paint"
+	"github.com/lysrt/bro/style"
 	"golang.org/x/net/html"
 )
 
@@ -25,8 +28,8 @@ func main() {
 	flag.Parse()
 
 	var (
-		domNodes *html.Node
-		style    *css.Stylesheet
+		domNodes   *html.Node
+		styleSheet *css.Stylesheet
 	)
 
 	//
@@ -54,7 +57,7 @@ func main() {
 
 	parser := css.NewParser(cssFile)
 	cssFile.Close()
-	style = parser.ParseStylesheet()
+	styleSheet = parser.ParseStylesheet()
 	if len(parser.Errors()) > 0 {
 		for _, e := range parser.Errors() {
 			log.Printf("parsing error: %q\n", e)
@@ -63,39 +66,31 @@ func main() {
 	// fmt.Println(style)
 
 	//
-	// 3. Decorating the DOM to generate the Style Tree
+	// 3. Decorate the DOM to generate the Style Tree
 	//
-	styleTree := GenerateStyleTree(domNodes, style)
-	// if err != nil {
-	// log.Fatalf("cannot build style tree: %q", err)
-	// }
-
+	styleTree := style.GenerateStyleTree(domNodes, styleSheet)
 	//fmt.Println(styleTree)
 
 	//
 	// 4.1 Build the Layout Tree
 	//
-	layoutTree := GenerateLayoutTree(styleTree)
-	// if err != nil {
-	// 	log.Fatalf("cannot build layout tree: %q", err)
-	// }
+	layoutTree := layout.GenerateLayoutTree(styleTree)
 	// fmt.Println(layoutTree)
 
 	//
 	// 4.2 Parcour the layout tree to compute boxes dimensions
 	//
 	// Height must be zero here!
-	layoutTree.Layout(Dimensions{content: Rect{x: 0, y: 0, width: 300, height: 0}})
+	layoutTree.Layout(layout.Dimensions{Content: layout.Rect{X: 0, Y: 0, Width: 300, Height: 0}})
 	// fmt.Println(layoutTree)
 
 	//
 	// 5. Paint the output from the Layout Tree
 	//
-	pixels, err := Paint(layoutTree)
+	pixels, err := paint.Paint(layoutTree)
 	if err != nil {
 		log.Fatalf("cannot paint from layout tree: %q", err)
 	}
-
 	//fmt.Println(pixels)
 
 	writeOutput(pngOutput, pixels)

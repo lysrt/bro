@@ -1,10 +1,11 @@
-package main
+package paint
 
 import (
 	"image"
 	"image/draw"
 
 	"github.com/lysrt/bro/css"
+	"github.com/lysrt/bro/layout"
 )
 
 type DisplayList []DisplayCommand
@@ -15,23 +16,23 @@ type DisplayCommand interface {
 
 type SolidColor struct {
 	color css.Color
-	rect  Rect
+	rect  layout.Rect
 }
 
 func (c *SolidColor) paint(img *Canvas) {
 	img.SetColor(c.color)
-	x0 := int(c.rect.x)
-	y0 := int(c.rect.y)
-	x1 := int(c.rect.x + c.rect.width)
-	y1 := int(c.rect.y + c.rect.height)
+	x0 := int(c.rect.X)
+	y0 := int(c.rect.Y)
+	x1 := int(c.rect.X + c.rect.Width)
+	y1 := int(c.rect.Y + c.rect.Height)
 	img.Rect(x0, y0, x1, y1)
 }
 
-func Paint(layoutRoot *LayoutBox) (image.Image, error) {
+func Paint(layoutRoot *layout.LayoutBox) (image.Image, error) {
 	displayList := buildDisplayList(layoutRoot)
 
-	width := int(layoutRoot.dimensions.content.width)
-	height := int(layoutRoot.dimensions.content.height)
+	width := int(layoutRoot.Dimensions.Content.Width)
+	height := int(layoutRoot.Dimensions.Content.Height)
 	img := image.NewNRGBA(image.Rect(0, 0, width, height))
 	draw.Draw(img, img.Bounds(), image.White, image.ZP, draw.Src)
 
@@ -43,29 +44,29 @@ func Paint(layoutRoot *LayoutBox) (image.Image, error) {
 	return img, nil
 }
 
-func buildDisplayList(layoutRoot *LayoutBox) DisplayList {
+func buildDisplayList(layoutRoot *layout.LayoutBox) DisplayList {
 	var list DisplayList
 	renderLayoutBox(&list, layoutRoot)
 	return list
 }
 
-func renderLayoutBox(list *DisplayList, layoutBox *LayoutBox) {
+func renderLayoutBox(list *DisplayList, layoutBox *layout.LayoutBox) {
 	renderBackground(list, layoutBox)
 	renderBorders(list, layoutBox)
 	// TODO render text
 
-	for _, child := range layoutBox.children {
+	for _, child := range layoutBox.Children {
 		renderLayoutBox(list, child)
 	}
 }
 
-func renderBackground(list *DisplayList, layoutBox *LayoutBox) {
+func renderBackground(list *DisplayList, layoutBox *layout.LayoutBox) {
 	if color, ok := getColor(layoutBox, "background-color"); ok {
-		*list = append(*list, &SolidColor{color: color, rect: layoutBox.dimensions.borderBox()})
+		*list = append(*list, &SolidColor{color: color, rect: layoutBox.Dimensions.BorderBox()})
 	}
 }
 
-func renderBorders(list *DisplayList, layoutBox *LayoutBox) {
+func renderBorders(list *DisplayList, layoutBox *layout.LayoutBox) {
 	var color css.Color
 	var ok bool
 
@@ -74,61 +75,61 @@ func renderBorders(list *DisplayList, layoutBox *LayoutBox) {
 		return
 	}
 
-	d := layoutBox.dimensions
-	borderBox := d.borderBox()
+	d := layoutBox.Dimensions
+	borderBox := d.BorderBox()
 
 	// Left border
 	*list = append(*list, &SolidColor{color: color,
-		rect: Rect{
-			x:      borderBox.x,
-			y:      borderBox.y,
-			width:  d.border.left,
-			height: borderBox.height,
+		rect: layout.Rect{
+			X:      borderBox.X,
+			Y:      borderBox.Y,
+			Width:  d.Border.Left,
+			Height: borderBox.Height,
 		},
 	})
 
 	// Right border
 	*list = append(*list, &SolidColor{color: color,
-		rect: Rect{
-			x:      borderBox.x + borderBox.width - d.border.right,
-			y:      borderBox.y,
-			width:  d.border.right,
-			height: borderBox.height,
+		rect: layout.Rect{
+			X:      borderBox.X + borderBox.Width - d.Border.Right,
+			Y:      borderBox.Y,
+			Width:  d.Border.Right,
+			Height: borderBox.Height,
 		},
 	})
 
 	// Top border
 	*list = append(*list, &SolidColor{color: color,
-		rect: Rect{
-			x:      borderBox.x,
-			y:      borderBox.y,
-			width:  borderBox.width,
-			height: d.border.top,
+		rect: layout.Rect{
+			X:      borderBox.X,
+			Y:      borderBox.Y,
+			Width:  borderBox.Width,
+			Height: d.Border.Top,
 		},
 	})
 
 	// Bottom border
 	*list = append(*list, &SolidColor{color: color,
-		rect: Rect{
-			x:      borderBox.x,
-			y:      borderBox.y + borderBox.height - d.border.bottom,
-			width:  borderBox.width,
-			height: d.border.bottom,
+		rect: layout.Rect{
+			X:      borderBox.X,
+			Y:      borderBox.Y + borderBox.Height - d.Border.Bottom,
+			Width:  borderBox.Width,
+			Height: d.Border.Bottom,
 		},
 	})
 }
 
-func getColor(layoutBox *LayoutBox, name string) (color css.Color, ok bool) {
-	switch layoutBox.boxType {
-	case BlockNode:
+func getColor(layoutBox *layout.LayoutBox, name string) (color css.Color, ok bool) {
+	switch layoutBox.BoxType {
+	case layout.BlockNode:
 		fallthrough
-	case InlineNode:
-		value, ok := layoutBox.styledNode.Value(name)
+	case layout.InlineNode:
+		value, ok := layoutBox.StyledNode.Value(name)
 		if !ok {
 			return css.Color{}, false
 		}
 		return value.Color, true
-	case AnonymousBlock:
+	case layout.AnonymousBlock:
 		return css.Color{}, false
 	default:
 		panic("Unknown boxType")
