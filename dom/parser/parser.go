@@ -59,7 +59,7 @@ func (p *Parser) nextToken() {
 // Before using node check for parser error with Errors.
 func (p *Parser) Parse() (nodes []*dom.Node) {
 	for {
-		n := p.parseNode()
+		n := p.parseNode(nil)
 		if n == nil {
 			return
 		}
@@ -67,22 +67,33 @@ func (p *Parser) Parse() (nodes []*dom.Node) {
 	}
 }
 
-func (p *Parser) parseNode() *dom.Node {
+func (p *Parser) parseNode(parent *dom.Node) (n *dom.Node) {
 	switch p.curToken.Type {
 	case lexer.TokenLBracket:
 		if p.peekTokenIs(lexer.TokenBang) {
 			//TODO: handle doctype
+			p.addError(p.peekToken, "doctype not implemented")
+			return
 		} else if p.peekTokenIs(lexer.TokenSlash) {
-			return p.parseClosingElement()
+			n = p.parseClosingElement()
 		} else if p.peekTokenIs(lexer.TokenIdent) {
-			return p.parseElement()
+			n = p.parseElement()
+		} else {
+			p.addError(p.peekToken, "unexpected peek token: %q", p.peekToken.Type)
+			p.nextToken()
+			return
 		}
-		p.addError(p.peekToken, "unexpected peek token: %q", p.peekToken.Type)
-		p.nextToken()
+	case lexer.TokenEOF:
+		if len(p.elements) != 0 {
+			p.addError(p.curToken, "unexpected end of file")
+		}
 	default:
 		p.addError(p.curToken, "unexpected token: %q", p.curToken.Type)
 	}
-	return nil
+	if n != nil {
+		n.Parent = parent
+	}
+	return
 }
 
 // parseElement parses nodes like: `<a><b></b></a>`
@@ -107,7 +118,7 @@ func (p *Parser) parseElement() *dom.Node {
 
 	p.elements = append(p.elements, root)
 	for {
-		n := p.parseNode()
+		n := p.parseNode(root)
 		if n == nil {
 			p.addError(startToken, "missing closing element")
 			break

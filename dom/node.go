@@ -1,5 +1,7 @@
 package dom
 
+import "fmt"
+
 const (
 	NodeError   NodeType = "error"
 	NodeTest             = "text"
@@ -22,4 +24,16 @@ type Node struct {
 	Attributes map[string]string
 
 	TextContent string
+}
+
+func (n *Node) String() string {
+	return fmt.Sprintf(
+		"{Tag:%q, Parent:%p, FirstChild:%p, LastChild:%p, PrevSibling:%p, NextSibling:%p}",
+		n.Tag,
+		n.Parent,
+		n.FirstChild,
+		n.LastChild,
+		n.PrevSibling,
+		n.NextSibling,
+	)
 }
