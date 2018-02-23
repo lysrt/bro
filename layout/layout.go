@@ -7,6 +7,25 @@ import (
 	"github.com/lysrt/bro/style"
 )
 
+// LayoutBox is the building block of the layout tree, associated to one StyleNode
+type LayoutBox struct {
+	// Dimensions of the box
+	Dimensions Dimensions
+
+	// Type of the box
+	BoxType    BoxType
+	StyledNode *style.StyledNode
+	Children   []*LayoutBox
+}
+
+type BoxType int
+
+const (
+	BlockNode BoxType = iota
+	InlineNode
+	AnonymousBlock
+)
+
 type Dimensions struct {
 	// Position of the content area relative to the document origin:
 	Content Rect
@@ -49,21 +68,6 @@ func (r Rect) expandedBy(edge EdgeSizes) Rect {
 
 type EdgeSizes struct {
 	Left, Right, Top, Bottom float64
-}
-
-type BoxType string
-
-const (
-	BlockNode      BoxType = "block"
-	InlineNode             = "inline"
-	AnonymousBlock         = "anon"
-)
-
-type LayoutBox struct {
-	Dimensions Dimensions
-	BoxType    BoxType
-	StyledNode *style.StyledNode
-	Children   []*LayoutBox
 }
 
 func newLayoutBox(boxType BoxType, styledNode *style.StyledNode) *LayoutBox {
