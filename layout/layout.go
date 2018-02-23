@@ -1,21 +1,26 @@
+// Package layout represents the layout tree of the HTML renderer.
+//
+// The main type is called LayoutBox.
 package layout
 
 import (
-	"fmt"
-
 	"github.com/lysrt/bro/css"
 	"github.com/lysrt/bro/style"
 )
 
 // LayoutBox is the building block of the layout tree, associated to one StyleNode
 type LayoutBox struct {
-	// Dimensions of the box
+	// Dimensions is the box position, size, margin, padding and border
 	Dimensions Dimensions
 
-	// Type of the box
-	BoxType    BoxType
+	// BoxType is the type of the box (inline, block, anonymous)
+	BoxType BoxType
+
+	// StyleNode holds the style node wrapped by this layout node
 	StyledNode *style.StyledNode
-	Children   []*LayoutBox
+
+	// Children of this node, in the layout tree, following the structure of the style tree
+	Children []*LayoutBox
 }
 
 type BoxType int
@@ -26,12 +31,23 @@ const (
 	AnonymousBlock
 )
 
+// Dimensions represents the position, size, margin, padding and border of a layout box
 type Dimensions struct {
-	// Position of the content area relative to the document origin:
+	// Content represents the position and size of the content area relative to the document origin:
 	Content Rect
 
 	// Surrounding edges:
 	padding, Border, margin EdgeSizes
+}
+
+// Rect represents the position and size of a box on the screen
+type Rect struct {
+	X, Y, Width, Height float64
+}
+
+// EdgeSizes is a placeholder for four float values
+type EdgeSizes struct {
+	Left, Right, Top, Bottom float64
 }
 
 // marginBox returns the area covered by the content area plus padding, borders, and margin
@@ -49,14 +65,6 @@ func (d Dimensions) paddingBox() Rect {
 	return d.Content.expandedBy(d.padding)
 }
 
-type Rect struct {
-	X, Y, Width, Height float64
-}
-
-func (r Rect) String() string {
-	return fmt.Sprintf("(%.f,%.f : w:%.f, h:%.f)", r.X, r.Y, r.Width, r.Height)
-}
-
 func (r Rect) expandedBy(edge EdgeSizes) Rect {
 	return Rect{
 		X:      r.X - edge.Left,
@@ -64,10 +72,6 @@ func (r Rect) expandedBy(edge EdgeSizes) Rect {
 		Width:  r.Width + edge.Left + edge.Right,
 		Height: r.Height + edge.Top + edge.Bottom,
 	}
-}
-
-type EdgeSizes struct {
-	Left, Right, Top, Bottom float64
 }
 
 func newLayoutBox(boxType BoxType, styledNode *style.StyledNode) *LayoutBox {
