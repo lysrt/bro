@@ -182,12 +182,12 @@ func (p *Parser) expectsPeek(t lexer.TokenType) bool {
 }
 
 func (p *Parser) peekError(t lexer.TokenType) {
-	p.addError(p.peekToken, "expected next token to be %s, got %s instead", t, p.peekToken.Type)
+	p.addError(p.peekToken, "expected next token to be %q, got %q instead", t, p.peekToken.Type)
 }
 
 func (p *Parser) addError(tok lexer.Token, format string, a ...interface{}) {
 	p.errors = append(p.errors, Error{
 		Token: tok,
-		Msg:   fmt.Sprintf(format, a),
+		Msg:   fmt.Sprintf(format, a...),
 	})
 }

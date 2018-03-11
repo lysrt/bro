@@ -110,3 +110,62 @@ func TestParseElement_recurse(t *testing.T) {
 		}
 	})
 }
+
+func TestParseElement_attributes(t *testing.T) {
+	input := `<a class="awesome"></a><b id="unique" class="awesome"></b><c id="intimidating" class="awesome"></c>`
+	tests := []*dom.Node{
+		{
+			Type: dom.NodeElement,
+			Tag:  "a",
+			Attributes: map[string]string{
+				"class": "awesome",
+			},
+		},
+		{
+			Type: dom.NodeElement,
+			Tag:  "b",
+			Attributes: map[string]string{
+				"class": "awesome",
+				"id":    "unique",
+			},
+		},
+		{
+			Type: dom.NodeElement,
+			Tag:  "c",
+			Attributes: map[string]string{
+				"class": "awesome",
+				"id":    "intimidating",
+			},
+		},
+	}
+
+	l := lexer.New(input)
+	p := New(l)
+
+	nodes := p.Parse()
+	t.Log(p.Errors())
+	if nodes == nil {
+		t.Fatal("fail to parse DOM")
+	}
+	if len(nodes) != len(tests) {
+		t.Fatalf("invalide node count. expected=%d got=%d", len(tests), len(nodes))
+	}
+	for i, tt := range tests {
+		n := nodes[i]
+		if n.Tag != tt.Tag {
+			t.Fatalf("tests[%d]: invalid tag. expected=%q got=%q", i, tt.Tag, n.Tag)
+		}
+		if n.Type != tt.Type {
+			t.Fatalf("tests[%d]: invalid type. expected=%q got=%q", i, tt.Type, n.Type)
+		}
+		for k, v := range tt.Attributes {
+			vv, ok := n.Attributes[k]
+			if !ok {
+				t.Fatalf("tests[%d]: missing attribute %q.", i, k)
+			}
+			if v != vv {
+				t.Fatalf("tests[%d]: bad attribute %q. expected=%q got=%q", i, k, vv, v)
+			}
+		}
+	}
+}
