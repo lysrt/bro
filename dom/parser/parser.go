@@ -83,6 +83,9 @@ func (p *Parser) parseNode(parent *dom.Node) (n *dom.Node) {
 			p.nextToken()
 			return
 		}
+	case lexer.TokenText:
+		//TODO: handle text node
+
 	case lexer.TokenEOF:
 		if len(p.elements) != 0 {
 			p.addError(p.curToken, "unexpected end of file")
@@ -98,17 +101,19 @@ func (p *Parser) parseNode(parent *dom.Node) (n *dom.Node) {
 
 // parseElement parses nodes like: `<a><b></b></a>`
 func (p *Parser) parseElement() *dom.Node {
+	// keep start token for the closing error
 	startToken := p.curToken
 
 	// skip LBracket
 	p.nextToken()
 
-	root := &dom.Node{
+	elem := &dom.Node{
 		Type:       dom.NodeElement,
 		Tag:        p.curToken.Literal,
 		Attributes: map[string]string{},
 	}
 
+	// parse attributes
 	for p.peekTokenIs(lexer.TokenIdent) {
 		p.nextToken()
 		name := p.curToken.Literal
@@ -120,7 +125,7 @@ func (p *Parser) parseElement() *dom.Node {
 			continue
 		}
 		p.nextToken()
-		root.Attributes[name] = p.curToken.Literal
+		elem.Attributes[name] = p.curToken.Literal
 	}
 
 	//TODO: handle autoclose
@@ -130,9 +135,10 @@ func (p *Parser) parseElement() *dom.Node {
 	// skip RBracket
 	p.nextToken()
 
-	p.elements = append(p.elements, root)
+	// parse inner nodes
+	p.elements = append(p.elements, elem)
 	for {
-		n := p.parseNode(root)
+		n := p.parseNode(elem)
 		if n == nil {
 			p.addError(startToken, "missing closing element")
 			break
@@ -145,17 +151,17 @@ func (p *Parser) parseElement() *dom.Node {
 			p.elements = p.elements[:len(p.elements)-1]
 			break
 		}
-		if root.FirstChild == nil {
-			root.FirstChild = n
+		if elem.FirstChild == nil {
+			elem.FirstChild = n
 		}
-		n.PrevSibling = root.LastChild
-		if root.LastChild != nil {
-			root.LastChild.NextSibling = n
+		n.PrevSibling = elem.LastChild
+		if elem.LastChild != nil {
+			elem.LastChild.NextSibling = n
 		}
-		root.LastChild = n
+		elem.LastChild = n
 	}
 
-	return root
+	return elem
 }
 
 // parseClosingElement parses elements like: `</node>`
