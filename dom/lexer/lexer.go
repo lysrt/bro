@@ -1,6 +1,9 @@
 package lexer
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type lexFn func(l *Lexer) (Token, lexFn)
 
@@ -102,8 +105,14 @@ func lexText(l *Lexer) (tok Token, fn lexFn) {
 	tok = newToken(l)
 	for {
 		if l.ch == '<' || l.ch == 0 {
+			text := l.input[tok.Position:l.position]
+			trimmedText := strings.TrimSpace(text)
+			if trimmedText == "" {
+				return lexNode(l)
+			}
+
 			tok.Type = TokenText
-			tok.Literal = l.input[tok.Position:l.position]
+			tok.Literal = trimmedText
 			fn = lexNode
 			break
 		}
