@@ -104,12 +104,26 @@ func (p *Parser) parseElement() *dom.Node {
 	p.nextToken()
 
 	root := &dom.Node{
-		Type: dom.NodeElement,
-		Tag:  p.curToken.Literal,
+		Type:       dom.NodeElement,
+		Tag:        p.curToken.Literal,
+		Attributes: map[string]string{},
 	}
 
-	//TODO: parse attributes & handle autoclose
+	for p.peekTokenIs(lexer.TokenIdent) {
+		p.nextToken()
+		name := p.curToken.Literal
+		if !p.peekTokenIs(lexer.TokenEqual) {
+			continue
+		}
+		p.nextToken()
+		if !p.peekTokenIs(lexer.TokenString) {
+			continue
+		}
+		p.nextToken()
+		root.Attributes[name] = p.curToken.Literal
+	}
 
+	//TODO: handle autoclose
 	if !p.expectsPeek(lexer.TokenRBracket) {
 		return nil
 	}
