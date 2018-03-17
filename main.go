@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/lysrt/bro/css"
-	"github.com/lysrt/bro/dom"
 	"github.com/lysrt/bro/layout"
 	"github.com/lysrt/bro/paint"
 	"github.com/lysrt/bro/style"
@@ -40,7 +39,7 @@ func main() {
 		log.Fatalf("cannot open HTML file: %q", err)
 	}
 
-	domNodes, err = dom.ParseHTML(htmlFile)
+	domNodes, err = html.Parse(htmlFile)
 	if err != nil {
 		log.Fatalf("cannot parse HTML file: %q", err)
 	}
