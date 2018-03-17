@@ -3,35 +3,33 @@ package dom
 import (
 	"fmt"
 	"strings"
-
-	"golang.org/x/net/html"
 )
 
 // NodeGetID extracts ID from a node.
-func NodeGetID(n *html.Node) string {
-	for _, attr := range n.Attr {
-		if attr.Key != "id" {
+func NodeGetID(n *Node) string {
+	for k, v := range n.Attributes {
+		if k != "id" {
 			continue
 		}
-		return attr.Val
+		return v
 	}
 	return ""
 }
 
 // NodeGetClasses extracts classes from a node.
-func NodeGetClasses(n *html.Node) []string {
-	for _, attr := range n.Attr {
-		if attr.Key != "class" {
+func NodeGetClasses(n *Node) []string {
+	for k, v := range n.Attributes {
+		if k != "class" {
 			continue
 		}
-		return strings.Fields(attr.Val)
+		return strings.Fields(v)
 	}
 	return nil
 }
 
 // NodeChildren returns all child nodes of n
-func NodeChildren(n *html.Node) []*html.Node {
-	var children []*html.Node
+func NodeChildren(n *Node) []*Node {
+	var children []*Node
 
 	f := n.FirstChild
 	if f == nil {
@@ -50,9 +48,9 @@ func NodeChildren(n *html.Node) []*html.Node {
 }
 
 // NodeFirstElementChild returns the first element child of the node.
-func NodeFirstElementChild(n *html.Node) *html.Node {
+func NodeFirstElementChild(n *Node) *Node {
 	for e := n.FirstChild; e != nil; e = e.NextSibling {
-		if e.Type == html.TextNode {
+		if e.Type == NodeText {
 			continue
 		}
 		return e
@@ -61,9 +59,9 @@ func NodeFirstElementChild(n *html.Node) *html.Node {
 }
 
 // NodeLastElementChild returns the last element child of the node.
-func NodeLastElementChild(n *html.Node) *html.Node {
+func NodeLastElementChild(n *Node) *Node {
 	for e := n.LastChild; e != nil; e = e.PrevSibling {
-		if e.Type == html.TextNode {
+		if e.Type == NodeText {
 			continue
 		}
 		return e
@@ -72,9 +70,9 @@ func NodeLastElementChild(n *html.Node) *html.Node {
 }
 
 // NodeNextElementSibling returns the next element sibling of the node.
-func NodeNextElementSibling(n *html.Node) *html.Node {
+func NodeNextElementSibling(n *Node) *Node {
 	for e := n.NextSibling; e != nil; e = e.NextSibling {
-		if e.Type == html.TextNode {
+		if e.Type == NodeText {
 			continue
 		}
 		return e
@@ -83,9 +81,9 @@ func NodeNextElementSibling(n *html.Node) *html.Node {
 }
 
 // NodePrevElementSibling returns the previous element sibling of the node.
-func NodePrevElementSibling(n *html.Node) *html.Node {
+func NodePrevElementSibling(n *Node) *Node {
 	for e := n.PrevSibling; e != nil; e = e.PrevSibling {
-		if e.Type == html.TextNode {
+		if e.Type == NodeText {
 			continue
 		}
 		return e
@@ -93,30 +91,30 @@ func NodePrevElementSibling(n *html.Node) *html.Node {
 	return nil
 }
 
-func Parcour(n *html.Node) {
+func Parcour(n *Node) {
 	ParcourN(n, 0)
 }
 
-func ParcourN(n *html.Node, depth int) {
+func ParcourN(n *Node, depth int) {
 	current := n
 
-	if current.Type == html.TextNode {
-		text := current.Data
+	if current.Type == NodeText {
+		text := current.TextContent
 		text = strings.TrimSpace(text)
 		if text != "" {
 			p(depth, "-> %v \"%v\"\n", printNodeType(current.Type), text)
 		}
-	} else if current.Type == html.ElementNode {
-		if len(current.Attr) > 0 {
-			p(depth, "-> %v <%v> %v\n", printNodeType(current.Type), current.DataAtom, current.Attr)
+	} else if current.Type == NodeElement {
+		if len(current.Attributes) > 0 {
+			p(depth, "-> %v <%v> %v\n", printNodeType(current.Type), current.Tag, current.Attributes)
 		} else {
-			p(depth, "-> %v <%v>\n", printNodeType(current.Type), current.DataAtom)
+			p(depth, "-> %v <%v>\n", printNodeType(current.Type), current.Tag)
 		}
-		if current.Data != current.DataAtom.String() {
-			p(depth, "Tag: %v\n", current.Data) // equals atom, if atom is recognized
+		if current.TextContent != current.Tag {
+			p(depth, "Tag: %v\n", current.TextContent) // equals atom, if atom is recognized
 		}
 	} else {
-		p(depth, "-> %v \"%v\"\n", printNodeType(current.Type), current.Data)
+		p(depth, "-> %v \"%v\"\n", printNodeType(current.Type), current.TextContent)
 	}
 
 	if current.FirstChild != nil {
@@ -136,21 +134,6 @@ func p(depth int, format string, args ...interface{}) {
 	fmt.Printf(spaces+format, args...)
 }
 
-func printNodeType(t html.NodeType) string {
-	switch t {
-	case html.DoctypeNode:
-		return "Doctype"
-	case html.CommentNode:
-		return "Comment"
-	case html.DocumentNode:
-		return "Document"
-	case html.ElementNode:
-		return "Element"
-	case html.ErrorNode:
-		return "Error"
-	case html.TextNode:
-		return "Text"
-	default:
-		return "UNKNOWN"
-	}
+func printNodeType(t NodeType) string {
+	return string(t)
 }

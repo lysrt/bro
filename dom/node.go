@@ -4,9 +4,9 @@ import "fmt"
 
 const (
 	NodeError   NodeType = "error"
-	NodeTest             = "text"
-	NodeElement          = "element"
-	NodeComment          = "comment"
+	NodeText    NodeType = "text"
+	NodeElement NodeType = "element"
+	NodeComment NodeType = "comment"
 )
 
 type NodeType string

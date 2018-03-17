@@ -4,14 +4,17 @@ import (
 	"flag"
 	"image"
 	"image/png"
+	"io/ioutil"
 	"log"
 	"os"
 
 	"github.com/lysrt/bro/css"
+	"github.com/lysrt/bro/dom"
+	"github.com/lysrt/bro/dom/lexer"
+	"github.com/lysrt/bro/dom/parser"
 	"github.com/lysrt/bro/layout"
 	"github.com/lysrt/bro/paint"
 	"github.com/lysrt/bro/style"
-	"golang.org/x/net/html"
 )
 
 func main() {
@@ -27,7 +30,7 @@ func main() {
 	flag.Parse()
 
 	var (
-		domNodes   *html.Node
+		domNodes   *dom.Node
 		styleSheet *css.Stylesheet
 	)
 
@@ -39,9 +42,21 @@ func main() {
 		log.Fatalf("cannot open HTML file: %q", err)
 	}
 
-	domNodes, err = html.Parse(htmlFile)
+	// domNodes, err = html.Parse(htmlFile)
+	b, err := ioutil.ReadAll(htmlFile)
 	if err != nil {
-		log.Fatalf("cannot parse HTML file: %q", err)
+		log.Fatalf("cannot read HTML gile: %q", err)
+	}
+
+	l := lexer.New(string(b))
+	p := parser.New(l)
+	domNodes = p.Parse()
+	if len(p.Errors()) > 0 {
+		log.Println("cannot parse HTML file")
+		for _, e := range p.Errors() {
+			log.Printf("%q (l: %d, c: %d)\n", e, e.Token.Line, e.Token.LinePosition)
+		}
+		log.Fatal()
 	}
 	htmlFile.Close()
 	// dom.Parcour(domNodes)

@@ -57,14 +57,8 @@ func (p *Parser) nextToken() {
 
 // Parse parses the document and return a dom tree.
 // Before using node check for parser error with Errors.
-func (p *Parser) Parse() (nodes []*dom.Node) {
-	for {
-		n := p.parseNode(nil)
-		if n == nil {
-			return
-		}
-		nodes = append(nodes, n)
-	}
+func (p *Parser) Parse() *dom.Node {
+	return p.parseNode(nil)
 }
 
 func (p *Parser) parseNode(parent *dom.Node) (n *dom.Node) {
