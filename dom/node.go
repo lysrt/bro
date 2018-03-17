@@ -37,3 +37,15 @@ func (n *Node) String() string {
 		n.NextSibling,
 	)
 }
+
+func (n *Node) AddChild(c *Node) {
+	c.Parent = c
+	if n.FirstChild == nil {
+		n.FirstChild = c
+		n.LastChild = c
+		return
+	}
+	n.LastChild.NextSibling = c
+	c.PrevSibling = n.LastChild
+	n.LastChild = c
+}

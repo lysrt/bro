@@ -58,10 +58,32 @@ func (p *Parser) nextToken() {
 // Parse parses the document and return a dom tree.
 // Before using node check for parser error with Errors.
 func (p *Parser) Parse() *dom.Node {
-	return p.parseNode(nil)
+	html := &dom.Node{Type: dom.NodeElement, Tag: "html"}
+	head := &dom.Node{Type: dom.NodeElement, Tag: "head"}
+	body := &dom.Node{Type: dom.NodeElement, Tag: "body"}
+
+	n := p.parseNode()
+	if n.Type == dom.NodeElement && n.Tag == "html" {
+		html = n
+	}
+	if n.Type == dom.NodeElement && n.Tag == "head" {
+		head = n
+		n = p.parseNode()
+	}
+	html.AddChild(head)
+	if n.Type == dom.NodeElement && n.Tag == "body" {
+		body = n
+		n = p.parseNode()
+	}
+	html.AddChild(body)
+	for n != nil {
+		body.AddChild(n)
+		n = p.parseNode()
+	}
+	return html
 }
 
-func (p *Parser) parseNode(parent *dom.Node) (n *dom.Node) {
+func (p *Parser) parseNode() (n *dom.Node) {
 	switch p.curToken.Type {
 	case lexer.TokenLBracket:
 		if p.peekTokenIs(lexer.TokenBang) {
@@ -86,9 +108,6 @@ func (p *Parser) parseNode(parent *dom.Node) (n *dom.Node) {
 		}
 	default:
 		p.addError(p.curToken, "unexpected token: %q", p.curToken.Type)
-	}
-	if n != nil {
-		n.Parent = parent
 	}
 	return
 }
@@ -132,7 +151,7 @@ func (p *Parser) parseElement() *dom.Node {
 	// parse inner nodes
 	p.elements = append(p.elements, elem)
 	for {
-		n := p.parseNode(elem)
+		n := p.parseNode()
 		if n == nil {
 			p.addError(startToken, "missing closing element")
 			break
@@ -145,14 +164,7 @@ func (p *Parser) parseElement() *dom.Node {
 			p.elements = p.elements[:len(p.elements)-1]
 			break
 		}
-		if elem.FirstChild == nil {
-			elem.FirstChild = n
-		}
-		n.PrevSibling = elem.LastChild
-		if elem.LastChild != nil {
-			elem.LastChild.NextSibling = n
-		}
-		elem.LastChild = n
+		elem.AddChild(n)
 	}
 
 	return elem
