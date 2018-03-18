@@ -92,18 +92,16 @@ func (p *Parser) parseNode() (n *dom.Node) {
 		if p.peekTokenIs(lexer.TokenBang) {
 			//TODO: handle doctype
 			p.addError(p.peekToken, "doctype not implemented")
-			return
 		} else if p.peekTokenIs(lexer.TokenSlash) {
 			n = p.parseClosingElement()
 		} else if p.peekTokenIs(lexer.TokenIdent) {
 			n = p.parseElement()
 		} else {
-			p.addError(p.peekToken, "unexpected peek token: %q", p.peekToken.Type)
-			p.nextToken()
-			return
+			p.addError(p.peekToken, "unexpected token: %q", p.peekToken.Type)
 		}
 	case lexer.TokenText:
-		//TODO: handle text node
+		n = &dom.Node{Type: dom.NodeText, TextContent: p.curToken.Literal}
+		p.nextToken()
 
 	case lexer.TokenEOF:
 		if len(p.elements) != 0 {
@@ -115,13 +113,13 @@ func (p *Parser) parseNode() (n *dom.Node) {
 	return
 }
 
-// parseElement parses nodes like: `<a><b></b></a>`
+// parseElement parses element node.
 func (p *Parser) parseElement() *dom.Node {
-	// keep start token for the closing error
+	// keep start token for error
 	startToken := p.curToken
-
-	// skip LBracket
-	p.nextToken()
+	if !p.expectsPeek(lexer.TokenIdent) {
+		return nil
+	}
 
 	elem := &dom.Node{
 		Type:       dom.NodeElement,
@@ -145,6 +143,8 @@ func (p *Parser) parseElement() *dom.Node {
 	}
 
 	//TODO: handle autoclose
+
+	// look for closing bracket
 	if !p.expectsPeek(lexer.TokenRBracket) {
 		return nil
 	}
@@ -175,8 +175,9 @@ func (p *Parser) parseElement() *dom.Node {
 
 // parseClosingElement parses elements like: `</node>`
 func (p *Parser) parseClosingElement() *dom.Node {
-	// skip LBracket
-	p.nextToken()
+	if !p.expectsPeek(lexer.TokenSlash) {
+		return nil
+	}
 	if !p.expectsPeek(lexer.TokenIdent) {
 		return nil
 	}

@@ -114,7 +114,7 @@ func TestParseElement_recurse(t *testing.T) {
 	p := New(l)
 
 	parsed := p.Parse()
-	t.Logf("parser errors: %v", p.Errors())
+	t.Log(p.Errors())
 	if parsed == nil {
 		t.Fatal("fail to parse DOM")
 	}
