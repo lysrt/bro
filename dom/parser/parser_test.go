@@ -35,165 +35,192 @@ func isNodeEqual(a, b *dom.Node) bool {
 	return true
 }
 
-func walkNodes(a, b *dom.Node, fn func(a, b *dom.Node)) {
-	if a == nil || b == nil {
-		return
+// compareNodes walks throught a and b calling fn on each iteration.
+// The function returns fall if a & b does not have the same number of element.
+func compareNodes(a, b *dom.Node, fn func(a, b *dom.Node)) bool {
+	if a == nil && b == nil {
+		return true
 	}
+	if a == nil || b == nil {
+		return false
+	}
+
 	fn(a, b)
-	walkNodes(a.FirstChild, b.FirstChild, fn)
-	walkNodes(a.NextSibling, b.NextSibling, fn)
+
+	if !compareNodes(a.FirstChild, b.FirstChild, fn) {
+		return false
+	}
+	if !compareNodes(a.NextSibling, b.NextSibling, fn) {
+		return false
+	}
+	return true
 }
 
 func TestParseElement(t *testing.T) {
-	input := `<a></a><b></b><c></c>`
-	tests := []*dom.Node{
-		{Type: dom.NodeElement, Tag: "a"},
-		{Type: dom.NodeElement, Tag: "b"},
-		{Type: dom.NodeElement, Tag: "c"},
+	expected := &dom.Node{Type: dom.NodeElement, Tag: "html"}
+	{
+		head := &dom.Node{Type: dom.NodeElement, Tag: "head"}
+		body := &dom.Node{Type: dom.NodeElement, Tag: "body"}
+		body.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "a"})
+		body.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "b"})
+		body.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "c"})
+		expected.AddChild(head)
+		expected.AddChild(body)
 	}
 
+	input := `<a></a><b></b><c></c>`
 	l := lexer.New(input)
 	p := New(l)
 
-	nodes := p.Parse()
+	parsed := p.Parse()
 	t.Log(p.Errors())
-	if nodes == nil {
+	if parsed == nil {
 		t.Fatal("fail to parse DOM")
 	}
-	if len(nodes) != len(tests) {
-		t.Fatalf("invalide node count. expected=%d got=%d", len(tests), len(nodes))
-	}
-	for i, tt := range tests {
-		n := nodes[i]
-		if n.Tag != tt.Tag {
-			t.Fatalf("tests[%d]: invalid tag. expected=%q got=%q", i, tt.Tag, n.Tag)
+	ok := compareNodes(expected, parsed, func(a, b *dom.Node) {
+		if a.Tag != b.Tag {
+			t.Fatalf("invalid tag. expected=%q got=%q", a.Tag, b.Tag)
 		}
-		if n.Type != tt.Type {
-			t.Fatalf("tests[%d]: invalid type. expected=%q got=%q", i, tt.Type, n.Type)
+		if a.Type != b.Type {
+			t.Fatalf("invalid type. expected=%q got=%q", a.Type, b.Type)
 		}
+	})
+	if !ok {
+		t.Fatal("fail to compare nodes")
 	}
 }
 
 func TestParseElement_recurse(t *testing.T) {
-	f := &dom.Node{Type: dom.NodeElement, Tag: "f"}
-	e := &dom.Node{Type: dom.NodeElement, Tag: "e", NextSibling: f}
-	d := &dom.Node{Type: dom.NodeElement, Tag: "d"}
-	c := &dom.Node{Type: dom.NodeElement, Tag: "c", NextSibling: d}
-	b := &dom.Node{Type: dom.NodeElement, Tag: "b", NextSibling: c, FirstChild: e, LastChild: f}
-	a := &dom.Node{Type: dom.NodeElement, Tag: "a", FirstChild: b, LastChild: d}
-	f.PrevSibling = e
-	d.PrevSibling = c
-	c.PrevSibling = b
-	e.Parent, f.Parent = b, b
-	b.Parent, c.Parent, d.Parent = a, a, a
+	a := &dom.Node{Type: dom.NodeElement, Tag: "a"}
+	{
+		b := &dom.Node{Type: dom.NodeElement, Tag: "b"}
+		b.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "e"})
+		b.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "f"})
+		a.AddChild(b)
+		a.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "c"})
+		a.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "d"})
+	}
+	expected := &dom.Node{Type: dom.NodeElement, Tag: "html"}
+	{
+		head := &dom.Node{Type: dom.NodeElement, Tag: "head"}
+		body := &dom.Node{Type: dom.NodeElement, Tag: "body"}
+		body.AddChild(a)
+		expected.AddChild(head)
+		expected.AddChild(body)
+	}
 
 	input := `<a><b><e></e><f></f></b><c></c><d></d></a>`
-	tests := []*dom.Node{a}
-
 	l := lexer.New(input)
 	p := New(l)
 
-	nodes := p.Parse()
+	parsed := p.Parse()
 	t.Logf("parser errors: %v", p.Errors())
-	if nodes == nil {
+	if parsed == nil {
 		t.Fatal("fail to parse DOM")
 	}
-	if len(nodes) != len(tests) {
-		t.Fatalf("invalide node count. expected=%d got=%d", len(tests), len(nodes))
-	}
 
-	walkNodes(tests[0], nodes[0], func(a, b *dom.Node) {
+	ok := compareNodes(expected, parsed, func(a, b *dom.Node) {
 		if !isNodeEqual(a, b) {
 			t.Logf("a=%v", a)
 			t.Logf("b=%v", b)
 			t.Fatal("nodes are different")
 		}
 	})
+	if !ok {
+		t.Fatal("fail to compare nodes")
+	}
 }
 
 func TestParseElement_attributes(t *testing.T) {
-	input := `<a class="awesome"></a><b id="unique" class="awesome"></b><c id="intimidating" class="awesome"></c>`
-	tests := []*dom.Node{
-		{
+	expected := &dom.Node{Type: dom.NodeElement, Tag: "html"}
+	{
+		expected.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "head"})
+		body := &dom.Node{Type: dom.NodeElement, Tag: "body"}
+		body.AddChild(&dom.Node{
 			Type: dom.NodeElement,
 			Tag:  "a",
 			Attributes: map[string]string{
-				"class": "awesome",
+				"class": "cool",
 			},
-		},
-		{
+		})
+		body.AddChild(&dom.Node{
 			Type: dom.NodeElement,
 			Tag:  "b",
 			Attributes: map[string]string{
-				"class": "awesome",
-				"id":    "unique",
+				"id": "unique",
 			},
-		},
-		{
+		})
+		body.AddChild(&dom.Node{
 			Type: dom.NodeElement,
 			Tag:  "c",
 			Attributes: map[string]string{
-				"class": "awesome",
-				"id":    "intimidating",
+				"id":    "crazy",
+				"class": "cool",
 			},
-		},
+		})
+		expected.AddChild(body)
 	}
 
+	input := `<a class="cool"></a><b id="unique"></b><c id="crazy" class="cool"></c>`
 	l := lexer.New(input)
 	p := New(l)
 
-	nodes := p.Parse()
+	parsed := p.Parse()
 	t.Log(p.Errors())
-	if nodes == nil {
+	if parsed == nil {
 		t.Fatal("fail to parse DOM")
 	}
-	if len(nodes) != len(tests) {
-		t.Fatalf("invalide node count. expected=%d got=%d", len(tests), len(nodes))
-	}
-	for i, tt := range tests {
-		n := nodes[i]
-		if n.Tag != tt.Tag {
-			t.Fatalf("tests[%d]: invalid tag. expected=%q got=%q", i, tt.Tag, n.Tag)
+	ok := compareNodes(expected, parsed, func(a, b *dom.Node) {
+		if b.Tag != a.Tag {
+			t.Fatalf("invalid tag. expected=%q got=%q", a.Tag, b.Tag)
 		}
-		if n.Type != tt.Type {
-			t.Fatalf("tests[%d]: invalid type. expected=%q got=%q", i, tt.Type, n.Type)
+		if b.Type != a.Type {
+			t.Fatalf("invalid type. expected=%q got=%q", a.Type, b.Type)
 		}
-		for k, v := range tt.Attributes {
-			vv, ok := n.Attributes[k]
+		for k, v := range a.Attributes {
+			vv, ok := b.Attributes[k]
 			if !ok {
-				t.Fatalf("tests[%d]: missing attribute %q.", i, k)
+				t.Fatalf("missing attribute %q.", k)
 			}
 			if v != vv {
-				t.Fatalf("tests[%d]: bad attribute %q. expected=%q got=%q", i, k, vv, v)
+				t.Fatalf("bad attribute %q. expected=%q got=%q", k, vv, v)
 			}
 		}
+	})
+	if !ok {
+		t.Fatal("fail to compare nodes")
 	}
 }
 
 func TestParseText(t *testing.T) {
-	input := `<a>I can read text!</a>`
-	tests := *dom.Node{
-		{Type: dom.NodeElement, Tag: "a"},
+	expected := &dom.Node{Type: dom.NodeElement, Tag: "html"}
+	{
+		expected.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "head"})
+		body := &dom.Node{Type: dom.NodeElement, Tag: "body"}
+		a := &dom.Node{Type: dom.NodeElement, Tag: "a"}
+		a.AddChild(&dom.Node{Type: dom.NodeText, TextContent: "I can read text!"})
+		body.AddChild(a)
+		expected.AddChild(body)
 	}
 
+	input := `<a>I can read text!</a>`
 	l := lexer.New(input)
 	p := New(l)
 
-	nodes := p.Parse()
+	parsed := p.Parse()
 	t.Log(p.Errors())
-	if nodes == nil {
+	if parsed == nil {
 		t.Fatal("fail to parse DOM")
 	}
-	if len(nodes) != len(tests) {
-		t.Fatalf("invalide node count. expected=%d got=%d", len(tests), len(nodes))
-	}
-	for i, tt := range tests {
-		n := nodes[i]
-		if n.Tag != tt.Tag {
-			t.Fatalf("tests[%d]: invalid tag. expected=%q got=%q", i, tt.Tag, n.Tag)
+	ok := compareNodes(expected, parsed, func(a, b *dom.Node) {
+		if b.Type != a.Type {
+			t.Fatalf("invalid type. expected=%q got=%q", a.Type, b.Type)
 		}
-		if n.Type != tt.Type {
-			t.Fatalf("tests[%d]: invalid type. expected=%q got=%q", i, tt.Type, n.Type)
+		if b.TextContent != a.TextContent {
+			t.Fatalf("invalid text content. expected=%q got=%q", a.TextContent, b.TextContent)
 		}
+	})
+	if !ok {
+		t.Fatal("fail to compare nodes")
 	}
 }

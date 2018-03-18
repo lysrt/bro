@@ -63,6 +63,9 @@ func (p *Parser) Parse() *dom.Node {
 	body := &dom.Node{Type: dom.NodeElement, Tag: "body"}
 
 	n := p.parseNode()
+	if n == nil {
+		return nil
+	}
 	if n.Type == dom.NodeElement && n.Tag == "html" {
 		html = n
 	}
