@@ -1,0 +1,38 @@
+Building A Web Browser In Go
+The misteries of the rendering engine
+
+Louis Arod
+louis@gryzzly.io
+
+* A web browser
+
+This is crazy !
+
+* The interpreters
+
+SpiderMonkey
+
+V8
+
+Edge?
+
+* The rendering engines
+
+Blink
+
+Gecko
+
+Webkit
+
+Edge?
+
+* The interfaces
+
+Firefox
+
+Chrome
+
+Safari
+
+Edge
+
