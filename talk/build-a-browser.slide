@@ -2,7 +2,7 @@ Building A Web Browser In Go
 20 Mar 2018
 
 Louis Arod
-Gryzzly Co-founder
+Developper, Gryzzly
 louis@gryzzly.io
 
 : Introduce myself, Gryzzly and Lucas, explain the project.
@@ -82,13 +82,39 @@ louis@gryzzly.io
 
 * The Parsers
 
+.image images/the-parser.png 550 _
+
+: 2 parts: a lexer and a parser
+: one for HTML & one for CSS
+: parsing HTML is difficult (error correction)
+
 * The DOM Tree
+
+.image images/go-meetup_dom.png 550 _
+
+: This is the output of the HTML parser.
+: It is the root of the following tree.
 
 * The Style Tree
 
+.image images/go-meetup_style.png 550 _
+
+: This tree is created with the DOM and the CSS rules.
+: Combining the two trees makes our life easier for the next step.
+
 * The Layout Tree
 
+.image images/box-layout.png _ 600
+
+: This is where the magic happens, we transform our DOM into boxes.
+: The boxes are rectangle with: margin, padding and border sizes.
+
 * Painting
+
+.image images/go-meetup_paint.png _ 600
+
+: We transform our boxes into a list of rules.
+: And then we pain the rules. This looks like pile of card.
 
 * Articles
 
