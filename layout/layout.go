@@ -8,6 +8,14 @@ import (
 	"github.com/lysrt/bro/style"
 )
 
+const (
+	BlockNode BoxType = iota
+	InlineNode
+	AnonymousBlock
+)
+
+type BoxType int
+
 // LayoutBox is the building block of the layout tree, associated to one StyleNode
 type LayoutBox struct {
 	// Dimensions is the box position, size, margin, padding and border
@@ -22,14 +30,6 @@ type LayoutBox struct {
 	// Children of this node, in the layout tree, following the structure of the style tree
 	Children []*LayoutBox
 }
-
-type BoxType int
-
-const (
-	BlockNode BoxType = iota
-	InlineNode
-	AnonymousBlock
-)
 
 // Dimensions represents the position, size, margin, padding and border of a layout box
 type Dimensions struct {

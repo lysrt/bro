@@ -88,9 +88,25 @@ louis@gryzzly.io
 : one for HTML & one for CSS
 : parsing HTML is difficult (error correction)
 
+* The CSS Lexer
+
+.code ../css/lexer.go /^type CSSTokenType/,/^\)/
+
+* The CSS Parser 1
+
+.code ../css/parser.go /^type Parser/,/^}/
+
+* The CSS Parser 2
+
+.code ../css/parser.go /^func NewParser/,/^}/
+
 * The DOM Tree
 
 .image images/go-meetup_dom.png 550 _
+
+* The DOM Struct
+
+.code ../dom/node.go /^const \(/,/^}/
 
 : This is the output of the HTML parser.
 : It is the root of the following tree.
@@ -99,12 +115,20 @@ louis@gryzzly.io
 
 .image images/go-meetup_style.png 550 _
 
+* The Style Struct
+
+.code ../style/style.go /^// PropertyMap/,/^}/
+
 : This tree is created with the DOM and the CSS rules.
 : Combining the two trees makes our life easier for the next step.
 
 * The Layout Tree
 
 .image images/box-layout.png _ 600
+
+* The Layout Struct
+
+.code ../layout/layout.go /^const \(/,/^}/
 
 : This is where the magic happens, we transform our DOM into boxes.
 : The boxes are rectangle with: margin, padding and border sizes.
