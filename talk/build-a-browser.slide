@@ -137,6 +137,11 @@ louis@gryzzly.io
 
 .image images/go-meetup_paint.png _ 600
 
+* Painting Code
+
+.code ../paint/painting.go /^type DisplayList/,/^}/
+.code ../paint/painting.go /^func renderLayoutBox/,/^}/
+
 : We transform our boxes into a list of rules.
 : And then we pain the rules. This looks like pile of card.
 
