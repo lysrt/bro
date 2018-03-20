@@ -1,38 +1,97 @@
 Building A Web Browser In Go
-The misteries of the rendering engine
+20 Mar 2018
 
 Louis Arod
+Gryzzly Co-founder
 louis@gryzzly.io
 
-* A web browser
+: Introduce myself, Gryzzly and Lucas, explain the project.
 
-This is crazy !
+* The Gopher
 
-* The interpreters
+.image images/gopher.svg
 
-SpiderMonkey
+: We are looking at a picture, do you know what is it made of?
 
-V8
+* The Gopher's Code
 
-Edge?
+.code images/gopher.svg /START OMIT/,/END OMIT/
 
-* The rendering engines
+: This is an SVG image through a text editor.
+: Simply XML! Could you tell me about another language?
 
-Blink
+* My Blog
 
-Gecko
+.image html-example/screenshot-full.png 550 _
 
-Webkit
+: As developper we often need to developpe user interfaces.
+: I ended up forgetting that we are drawing images.
 
-Edge?
+* My Blog's Code
 
-* The interfaces
+- HTML
 
-Firefox
+.code html-example/index.html /START OMIT/,/END OMIT/
 
-Chrome
+- CSS
 
-Safari
+.code html-example/style.css /START OMIT/,/END OMIT/
 
-Edge
+: Here are the building blocks of the web!
+: But how do we transform them into an user interface?
 
+* The Browsers
+
+.image images/browser-logos.png _ 600
+
+: We need a tool to do the job and these tools are famous.
+: Safari: browser / compass
+: How the hell is it working?
+: logo: https://github.com/alrra/browser-logos
+
+* The Insides Of A Browser
+
+.image images/browser-insides.png _ 800
+
+: A browser has 3 main parts:
+: - an interpreter to parse and execute JS
+: - a rendering engine to render HTML and CSS
+: - an user interface gluing it all together
+
+* The Javascript Engine
+
+.image images/v8_256x256.png
+
+- SpiderMonkey
+- V8
+- JavascriptCode/Nitro
+- Chakra
+
+* The Layout Engines
+
+.image images/webkit_logo.png _ 250
+
+- Gecko
+- Blink
+- Webkit
+- EdgeHTML
+
+* The Insides Of A Layout Engine
+
+.image images/layout-engine.svg _ 1000
+
+* The Parsers
+
+* The DOM Tree
+
+* The Style Tree
+
+* The Layout Tree
+
+* Painting
+
+* Articles
+
+- [[https://limpet.net/mbrubeck/2014/08/08/toy-layout-engine-1.html]]
+- [[https://www.html5rocks.com/en/tutorials/internals/howbrowserswork/]]
+- [[https://interpreterbook.com/]]

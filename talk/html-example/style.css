@@ -1,0 +1,59 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* START OMIT */
+header {
+    background-color: lightblue;
+    height: 10em;
+    margin-bottom: 1em;
+}
+/* END OMIT */
+
+nav {
+    margin-bottom: 1em;
+    padding: 0.5em 0;
+}
+
+footer {
+    background-color: lightgreen;
+}
+
+img {
+    height: 100%;
+}
+
+.container {
+    max-width: 750px;
+    height: 100%;
+    margin: 0 auto;
+}
+
+.flexor {
+    display: flex;
+    align-items: center;
+}
+
+.flexcen {
+    display: flex;
+    justify-content: space-between;
+}
+
+.title {
+    margin-left: auto;
+}
+
+.legal {
+    width: 33.333%;
+}
+
+.link {
+    width: 66.666%;
+}
+
+main img {
+    display: block;
+    height: 20em;
+    margin: 0 auto;
+}
