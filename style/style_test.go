@@ -1,29 +1,29 @@
 package style
 
 import (
-	"bytes"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/lysrt/bro/css"
 	"github.com/lysrt/bro/dom"
-
-	"golang.org/x/net/html"
+	"github.com/lysrt/bro/dom/lexer"
+	"github.com/lysrt/bro/dom/parser"
 )
 
-func htmlParseSnippet(t *testing.T, data string) *html.Node {
-	n, err := html.Parse(strings.NewReader(data))
-	if err != nil {
-		t.Fatal("fail to parse HTML:", err)
+func htmlParseSnippet(t *testing.T, data string) *dom.Node {
+	l := lexer.New(data)
+	p := parser.New(l)
+	n := p.Parse()
+	if errors := p.Errors(); len(errors) > 0 {
+		t.Fatal(errors)
 	}
 	// return the first element of the body.
-	return n.FirstChild.LastChild.FirstChild
+	return n.LastChild.FirstChild
 }
 
 func Test_matchSelector(t *testing.T) {
 	type args struct {
-		n        *html.Node
+		n        *dom.Node
 		selector css.Selector
 	}
 	tests := []struct {
@@ -91,9 +91,10 @@ func Test_matchSelector(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := matchSelector(tt.args.n, tt.args.selector); got != tt.want {
-				buf := bytes.Buffer{}
-				html.Render(&buf, tt.args.n)
-				t.Log(buf.String())
+				// TODO: write HTML into buffer
+				//buf := bytes.Buffer{}
+				//html.Render(&buf, tt.args.n)
+				//t.Log(buf.String())
 				t.Errorf("matchSelector() = %v, want %v", got, tt.want)
 			}
 		})
@@ -102,7 +103,7 @@ func Test_matchSelector(t *testing.T) {
 
 func Test_matchRule(t *testing.T) {
 	type args struct {
-		n *html.Node
+		n *dom.Node
 		r css.Rule
 	}
 	tests := []struct {
@@ -114,7 +115,7 @@ func Test_matchRule(t *testing.T) {
 		{
 			name: "valid",
 			args: args{
-				n: &html.Node{Data: "p"},
+				n: &dom.Node{Tag: "p"},
 				r: css.Rule{Selectors: []css.Selector{{TagName: "a"}, {TagName: "p"}}},
 			},
 			wantRule: css.Rule{Selectors: []css.Selector{{TagName: "a"}, {TagName: "p"}}},
@@ -123,7 +124,7 @@ func Test_matchRule(t *testing.T) {
 		{
 			name: "invalid",
 			args: args{
-				n: &html.Node{Data: "p"},
+				n: &dom.Node{Tag: "p"},
 				r: css.Rule{Selectors: []css.Selector{{TagName: "a"}, {ID: "bloup"}}},
 			},
 			wantRule: css.Rule{},
@@ -203,7 +204,7 @@ func Test_specifiedValues(t *testing.T) {
 		},
 	}
 	type args struct {
-		n          *html.Node
+		n          *dom.Node
 		stylesheet *css.Stylesheet
 	}
 	tests := []struct {
@@ -248,9 +249,10 @@ func Test_specifiedValues(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := specifiedValues(tt.args.n, tt.args.stylesheet); !reflect.DeepEqual(got, tt.want) {
-				buf := bytes.Buffer{}
-				html.Render(&buf, tt.args.n)
-				t.Log(buf.String())
+				// TODO: write HTML into buffer
+				//buf := bytes.Buffer{}
+				//html.Render(&buf, tt.args.n)
+				//t.Log(buf.String())
 				t.Errorf("specifiedValues() = %v, want %v", got, tt.want)
 			}
 		})

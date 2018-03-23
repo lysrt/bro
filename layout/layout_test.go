@@ -5,10 +5,11 @@ import (
 	"testing"
 
 	"github.com/lysrt/bro/dom"
+	"github.com/lysrt/bro/dom/lexer"
+	"github.com/lysrt/bro/dom/parser"
 	"github.com/lysrt/bro/style"
 
 	"github.com/lysrt/bro/css"
-	"golang.org/x/net/html"
 )
 
 var blockHTML = `<container>
@@ -25,15 +26,17 @@ var (
 )
 
 func TestGenerateLayoutTree(t *testing.T) {
-	node, err := html.Parse(strings.NewReader(blockHTML))
-	if err != nil {
-		t.Fatal("fail to parse DOM:", err)
+	l := lexer.New(blockHTML)
+	p := parser.New(l)
+	node := p.Parse()
+	if errors := p.Errors(); len(errors) > 0 {
+		t.Fatal(errors)
 	}
 	// go through ??? -> html -> body -> container
 	node = dom.NodeLastElementChild(node)
 	node = dom.NodeLastElementChild(node)
 	node = dom.NodeLastElementChild(node)
-	t.Log(node.Data)
+	t.Log(node.Tag)
 
 	blockStyle := css.NewParser(strings.NewReader(blockCSS)).ParseStylesheet()
 	inlineStyle := css.NewParser(strings.NewReader(blockCSS)).ParseStylesheet()
@@ -92,14 +95,14 @@ func TestGenerateLayoutTree(t *testing.T) {
 			want := tt.want
 			got := GenerateLayoutTree(tt.args.styleTree)
 			if got.BoxType != want.BoxType {
-				node := got.StyledNode.Node.Data
+				node := got.StyledNode.Node.Tag
 				t.Fatalf("node %q expects %q got %q", node, want.BoxType, got.BoxType)
 			}
 			for i := range got.Children {
 				got := got.Children[i]
 				want := want.Children[i]
 				if got.BoxType != want.BoxType {
-					node := got.StyledNode.Node.Data
+					node := got.StyledNode.Node.Tag
 					t.Fatalf("node %q expects %q got %q", node, want.BoxType, got.BoxType)
 				}
 			}
