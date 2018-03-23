@@ -3,13 +3,13 @@ package parser
 import (
 	"fmt"
 
-	"github.com/lysrt/bro/dom"
-	"github.com/lysrt/bro/dom/lexer"
+	"github.com/lysrt/bro/html"
+	"github.com/lysrt/bro/html/lexer"
 )
 
 // nodeClosingElement is a special node for HTML closing element.
 // It should not escapes outside of the parser.
-const nodeClosingElement dom.NodeType = "closing element"
+const nodeClosingElement html.NodeType = "closing element"
 
 // Error represents a parser error.
 type Error struct {
@@ -28,7 +28,7 @@ type Parser struct {
 	curToken  lexer.Token
 	peekToken lexer.Token
 
-	elements []*dom.Node
+	elements []*html.Node
 
 	errors []Error
 }
@@ -55,38 +55,38 @@ func (p *Parser) nextToken() {
 	p.peekToken = p.l.NextToken()
 }
 
-// Parse parses the document and return a dom tree.
+// Parse parses the document and return a html.tree.
 // Before using node check for parser error with Errors.
-func (p *Parser) Parse() *dom.Node {
-	html := &dom.Node{Type: dom.NodeElement, Tag: "html"}
-	head := &dom.Node{Type: dom.NodeElement, Tag: "head"}
-	body := &dom.Node{Type: dom.NodeElement, Tag: "body"}
+func (p *Parser) Parse() *html.Node {
+	htmlNode := &html.Node{Type: html.NodeElement, Tag: "html"}
+	head := &html.Node{Type: html.NodeElement, Tag: "head"}
+	body := &html.Node{Type: html.NodeElement, Tag: "body"}
 
 	n := p.parseNode()
 	if n == nil {
 		return nil
 	}
-	if n.Type == dom.NodeElement && n.Tag == "html" {
-		html = n
+	if n.Type == html.NodeElement && n.Tag == "html" {
+		htmlNode = n
 	}
-	if n.Type == dom.NodeElement && n.Tag == "head" {
+	if n.Type == html.NodeElement && n.Tag == "head" {
 		head = n
 		n = p.parseNode()
 	}
-	html.AddChild(head)
-	if n.Type == dom.NodeElement && n.Tag == "body" {
+	htmlNode.AddChild(head)
+	if n.Type == html.NodeElement && n.Tag == "body" {
 		body = n
 		n = p.parseNode()
 	}
-	html.AddChild(body)
+	htmlNode.AddChild(body)
 	for n != nil {
 		body.AddChild(n)
 		n = p.parseNode()
 	}
-	return html
+	return htmlNode
 }
 
-func (p *Parser) parseNode() (n *dom.Node) {
+func (p *Parser) parseNode() (n *html.Node) {
 	switch p.curToken.Type {
 	case lexer.TokenLBracket:
 		if p.peekTokenIs(lexer.TokenBang) {
@@ -100,7 +100,7 @@ func (p *Parser) parseNode() (n *dom.Node) {
 			p.addError(p.peekToken, "unexpected token: %q", p.peekToken.Type)
 		}
 	case lexer.TokenText:
-		n = &dom.Node{Type: dom.NodeText, TextContent: p.curToken.Literal}
+		n = &html.Node{Type: html.NodeText, TextContent: p.curToken.Literal}
 		p.nextToken()
 
 	case lexer.TokenEOF:
@@ -114,15 +114,15 @@ func (p *Parser) parseNode() (n *dom.Node) {
 }
 
 // parseElement parses element node.
-func (p *Parser) parseElement() *dom.Node {
+func (p *Parser) parseElement() *html.Node {
 	// keep start token for error
 	startToken := p.curToken
 	if !p.expectsPeek(lexer.TokenIdent) {
 		return nil
 	}
 
-	elem := &dom.Node{
-		Type:       dom.NodeElement,
+	elem := &html.Node{
+		Type:       html.NodeElement,
 		Tag:        p.curToken.Literal,
 		Attributes: map[string]string{},
 	}
@@ -174,14 +174,14 @@ func (p *Parser) parseElement() *dom.Node {
 }
 
 // parseClosingElement parses elements like: `</node>`
-func (p *Parser) parseClosingElement() *dom.Node {
+func (p *Parser) parseClosingElement() *html.Node {
 	if !p.expectsPeek(lexer.TokenSlash) {
 		return nil
 	}
 	if !p.expectsPeek(lexer.TokenIdent) {
 		return nil
 	}
-	n := &dom.Node{
+	n := &html.Node{
 		Type: nodeClosingElement,
 		Tag:  p.curToken.Literal,
 	}

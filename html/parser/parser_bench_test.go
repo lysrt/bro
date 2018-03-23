@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/lysrt/bro/dom/lexer"
+	"github.com/lysrt/bro/html/lexer"
 	"golang.org/x/net/html"
 )
 

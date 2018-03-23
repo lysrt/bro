@@ -3,11 +3,11 @@ package parser
 import (
 	"testing"
 
-	"github.com/lysrt/bro/dom"
-	"github.com/lysrt/bro/dom/lexer"
+	"github.com/lysrt/bro/html"
+	"github.com/lysrt/bro/html/lexer"
 )
 
-func isNodeEqual(a, b *dom.Node) bool {
+func isNodeEqual(a, b *html.Node) bool {
 	if a == nil && b == nil {
 		return true
 	}
@@ -37,7 +37,7 @@ func isNodeEqual(a, b *dom.Node) bool {
 
 // compareNodes walks throught a and b calling fn on each iteration.
 // The function returns fall if a & b does not have the same number of element.
-func compareNodes(a, b *dom.Node, fn func(a, b *dom.Node)) bool {
+func compareNodes(a, b *html.Node, fn func(a, b *html.Node)) bool {
 	if a == nil && b == nil {
 		return true
 	}
@@ -57,13 +57,13 @@ func compareNodes(a, b *dom.Node, fn func(a, b *dom.Node)) bool {
 }
 
 func TestParseElement(t *testing.T) {
-	expected := &dom.Node{Type: dom.NodeElement, Tag: "html"}
+	expected := &html.Node{Type: html.NodeElement, Tag: "html"}
 	{
-		head := &dom.Node{Type: dom.NodeElement, Tag: "head"}
-		body := &dom.Node{Type: dom.NodeElement, Tag: "body"}
-		body.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "a"})
-		body.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "b"})
-		body.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "c"})
+		head := &html.Node{Type: html.NodeElement, Tag: "head"}
+		body := &html.Node{Type: html.NodeElement, Tag: "body"}
+		body.AddChild(&html.Node{Type: html.NodeElement, Tag: "a"})
+		body.AddChild(&html.Node{Type: html.NodeElement, Tag: "b"})
+		body.AddChild(&html.Node{Type: html.NodeElement, Tag: "c"})
 		expected.AddChild(head)
 		expected.AddChild(body)
 	}
@@ -77,7 +77,7 @@ func TestParseElement(t *testing.T) {
 	if parsed == nil {
 		t.Fatal("fail to parse DOM")
 	}
-	ok := compareNodes(expected, parsed, func(a, b *dom.Node) {
+	ok := compareNodes(expected, parsed, func(a, b *html.Node) {
 		if a.Tag != b.Tag {
 			t.Fatalf("invalid tag. expected=%q got=%q", a.Tag, b.Tag)
 		}
@@ -91,19 +91,19 @@ func TestParseElement(t *testing.T) {
 }
 
 func TestParseElement_recurse(t *testing.T) {
-	a := &dom.Node{Type: dom.NodeElement, Tag: "a"}
+	a := &html.Node{Type: html.NodeElement, Tag: "a"}
 	{
-		b := &dom.Node{Type: dom.NodeElement, Tag: "b"}
-		b.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "e"})
-		b.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "f"})
+		b := &html.Node{Type: html.NodeElement, Tag: "b"}
+		b.AddChild(&html.Node{Type: html.NodeElement, Tag: "e"})
+		b.AddChild(&html.Node{Type: html.NodeElement, Tag: "f"})
 		a.AddChild(b)
-		a.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "c"})
-		a.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "d"})
+		a.AddChild(&html.Node{Type: html.NodeElement, Tag: "c"})
+		a.AddChild(&html.Node{Type: html.NodeElement, Tag: "d"})
 	}
-	expected := &dom.Node{Type: dom.NodeElement, Tag: "html"}
+	expected := &html.Node{Type: html.NodeElement, Tag: "html"}
 	{
-		head := &dom.Node{Type: dom.NodeElement, Tag: "head"}
-		body := &dom.Node{Type: dom.NodeElement, Tag: "body"}
+		head := &html.Node{Type: html.NodeElement, Tag: "head"}
+		body := &html.Node{Type: html.NodeElement, Tag: "body"}
 		body.AddChild(a)
 		expected.AddChild(head)
 		expected.AddChild(body)
@@ -119,7 +119,7 @@ func TestParseElement_recurse(t *testing.T) {
 		t.Fatal("fail to parse DOM")
 	}
 
-	ok := compareNodes(expected, parsed, func(a, b *dom.Node) {
+	ok := compareNodes(expected, parsed, func(a, b *html.Node) {
 		if !isNodeEqual(a, b) {
 			t.Logf("a=%v", a)
 			t.Logf("b=%v", b)
@@ -132,26 +132,26 @@ func TestParseElement_recurse(t *testing.T) {
 }
 
 func TestParseElement_attributes(t *testing.T) {
-	expected := &dom.Node{Type: dom.NodeElement, Tag: "html"}
+	expected := &html.Node{Type: html.NodeElement, Tag: "html"}
 	{
-		expected.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "head"})
-		body := &dom.Node{Type: dom.NodeElement, Tag: "body"}
-		body.AddChild(&dom.Node{
-			Type: dom.NodeElement,
+		expected.AddChild(&html.Node{Type: html.NodeElement, Tag: "head"})
+		body := &html.Node{Type: html.NodeElement, Tag: "body"}
+		body.AddChild(&html.Node{
+			Type: html.NodeElement,
 			Tag:  "a",
 			Attributes: map[string]string{
 				"class": "cool",
 			},
 		})
-		body.AddChild(&dom.Node{
-			Type: dom.NodeElement,
+		body.AddChild(&html.Node{
+			Type: html.NodeElement,
 			Tag:  "b",
 			Attributes: map[string]string{
 				"id": "unique",
 			},
 		})
-		body.AddChild(&dom.Node{
-			Type: dom.NodeElement,
+		body.AddChild(&html.Node{
+			Type: html.NodeElement,
 			Tag:  "c",
 			Attributes: map[string]string{
 				"id":    "crazy",
@@ -170,7 +170,7 @@ func TestParseElement_attributes(t *testing.T) {
 	if parsed == nil {
 		t.Fatal("fail to parse DOM")
 	}
-	ok := compareNodes(expected, parsed, func(a, b *dom.Node) {
+	ok := compareNodes(expected, parsed, func(a, b *html.Node) {
 		if b.Tag != a.Tag {
 			t.Fatalf("invalid tag. expected=%q got=%q", a.Tag, b.Tag)
 		}
@@ -193,12 +193,12 @@ func TestParseElement_attributes(t *testing.T) {
 }
 
 func TestParseText(t *testing.T) {
-	expected := &dom.Node{Type: dom.NodeElement, Tag: "html"}
+	expected := &html.Node{Type: html.NodeElement, Tag: "html"}
 	{
-		expected.AddChild(&dom.Node{Type: dom.NodeElement, Tag: "head"})
-		body := &dom.Node{Type: dom.NodeElement, Tag: "body"}
-		a := &dom.Node{Type: dom.NodeElement, Tag: "a"}
-		a.AddChild(&dom.Node{Type: dom.NodeText, TextContent: "I can read text!"})
+		expected.AddChild(&html.Node{Type: html.NodeElement, Tag: "head"})
+		body := &html.Node{Type: html.NodeElement, Tag: "body"}
+		a := &html.Node{Type: html.NodeElement, Tag: "a"}
+		a.AddChild(&html.Node{Type: html.NodeText, TextContent: "I can read text!"})
 		body.AddChild(a)
 		expected.AddChild(body)
 	}
@@ -212,7 +212,7 @@ func TestParseText(t *testing.T) {
 	if parsed == nil {
 		t.Fatal("fail to parse DOM")
 	}
-	ok := compareNodes(expected, parsed, func(a, b *dom.Node) {
+	ok := compareNodes(expected, parsed, func(a, b *html.Node) {
 		if b.Type != a.Type {
 			t.Fatalf("invalid type. expected=%q got=%q", a.Type, b.Type)
 		}

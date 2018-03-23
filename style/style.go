@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/lysrt/bro/css"
-	"github.com/lysrt/bro/dom"
+	"github.com/lysrt/bro/html"
 )
 
 // PropertyMap is used by a node to keep track of its applied CSS declarations.
@@ -17,7 +17,7 @@ type PropertyMap map[string]css.Value
 
 // StyledNode represents a DOM Node with the associated CSS.
 type StyledNode struct {
-	Node            *dom.Node
+	Node            *html.Node
 	SpecifiedValues PropertyMap
 	Children        []*StyledNode
 }
@@ -54,22 +54,22 @@ func (node *StyledNode) Display() Display {
 }
 
 // GenerateStyleTree a DOM node and its children with CSS rules from a Stylesheet.
-func GenerateStyleTree(root *dom.Node, css *css.Stylesheet) *StyledNode {
+func GenerateStyleTree(root *html.Node, css *css.Stylesheet) *StyledNode {
 	var propertyMap PropertyMap
 
 	switch root.Type {
-	case dom.NodeElement:
+	case html.NodeElement:
 		if css == nil {
 			propertyMap = make(PropertyMap)
 		} else {
 			propertyMap = specifiedValues(root, css)
 		}
-	case dom.NodeText:
+	case html.NodeText:
 		propertyMap = make(PropertyMap)
 	}
 
 	var children []*StyledNode
-	for _, child := range dom.NodeChildren(root) {
+	for _, child := range html.NodeChildren(root) {
 		styled := GenerateStyleTree(child, css)
 		children = append(children, styled)
 	}
@@ -88,7 +88,7 @@ type MatchedRule struct {
 }
 
 // specifiedValues returns a map of all CSS properties applied to a given DOM node.
-func specifiedValues(element *dom.Node, stylesheet *css.Stylesheet) PropertyMap {
+func specifiedValues(element *html.Node, stylesheet *css.Stylesheet) PropertyMap {
 	properties := make(PropertyMap)
 	rules := matchingRules(element, stylesheet)
 
@@ -132,7 +132,7 @@ func specifiedValues(element *dom.Node, stylesheet *css.Stylesheet) PropertyMap 
 }
 
 // matchingRules returns all the matched CSS rules for a given DOM node.
-func matchingRules(n *dom.Node, stylesheet *css.Stylesheet) []MatchedRule {
+func matchingRules(n *html.Node, stylesheet *css.Stylesheet) []MatchedRule {
 	var matches []MatchedRule
 	for _, r := range stylesheet.Rules {
 		m, ok := matchRule(n, r)
@@ -145,7 +145,7 @@ func matchingRules(n *dom.Node, stylesheet *css.Stylesheet) []MatchedRule {
 }
 
 // matchRule tries to match a CSS rule to a DOM node and returns the most specific one.
-func matchRule(n *dom.Node, rule css.Rule) (m MatchedRule, ok bool) {
+func matchRule(n *html.Node, rule css.Rule) (m MatchedRule, ok bool) {
 	for _, s := range rule.Selectors {
 		if matchSelector(n, s) {
 			ok = true
@@ -161,16 +161,16 @@ func matchRule(n *dom.Node, rule css.Rule) (m MatchedRule, ok bool) {
 
 // matchSelector tries to match a DOM node with a CSS selector.
 // There is a match only if all the fields of the selector match.
-func matchSelector(n *dom.Node, selector css.Selector) bool {
+func matchSelector(n *html.Node, selector css.Selector) bool {
 	if selector.TagName != "" && n.Tag != selector.TagName {
 		return false
 	}
-	if selector.ID != "" && selector.ID != dom.NodeGetID(n) {
+	if selector.ID != "" && selector.ID != html.NodeGetID(n) {
 		return false
 	}
 outer_loop:
 	for _, c := range selector.Classes {
-		for _, cc := range dom.NodeGetClasses(n) {
+		for _, cc := range html.NodeGetClasses(n) {
 			if c == cc {
 				continue outer_loop
 			}

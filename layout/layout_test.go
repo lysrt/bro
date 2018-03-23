@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/lysrt/bro/dom"
-	"github.com/lysrt/bro/dom/lexer"
-	"github.com/lysrt/bro/dom/parser"
+	"github.com/lysrt/bro/html"
+	"github.com/lysrt/bro/html/lexer"
+	"github.com/lysrt/bro/html/parser"
 	"github.com/lysrt/bro/style"
 
 	"github.com/lysrt/bro/css"
@@ -33,9 +33,9 @@ func TestGenerateLayoutTree(t *testing.T) {
 		t.Fatal(errors)
 	}
 	// go through ??? -> html -> body -> container
-	node = dom.NodeLastElementChild(node)
-	node = dom.NodeLastElementChild(node)
-	node = dom.NodeLastElementChild(node)
+	node = html.NodeLastElementChild(node)
+	node = html.NodeLastElementChild(node)
+	node = html.NodeLastElementChild(node)
 	t.Log(node.Tag)
 
 	blockStyle := css.NewParser(strings.NewReader(blockCSS)).ParseStylesheet()

@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/lysrt/bro/css"
-	"github.com/lysrt/bro/dom"
-	"github.com/lysrt/bro/dom/lexer"
-	"github.com/lysrt/bro/dom/parser"
+	"github.com/lysrt/bro/html"
+	"github.com/lysrt/bro/html/lexer"
+	"github.com/lysrt/bro/html/parser"
 )
 
-func htmlParseSnippet(t *testing.T, data string) *dom.Node {
+func htmlParseSnippet(t *testing.T, data string) *html.Node {
 	l := lexer.New(data)
 	p := parser.New(l)
 	n := p.Parse()
@@ -23,7 +23,7 @@ func htmlParseSnippet(t *testing.T, data string) *dom.Node {
 
 func Test_matchSelector(t *testing.T) {
 	type args struct {
-		n        *dom.Node
+		n        *html.Node
 		selector css.Selector
 	}
 	tests := []struct {
@@ -103,7 +103,7 @@ func Test_matchSelector(t *testing.T) {
 
 func Test_matchRule(t *testing.T) {
 	type args struct {
-		n *dom.Node
+		n *html.Node
 		r css.Rule
 	}
 	tests := []struct {
@@ -115,7 +115,7 @@ func Test_matchRule(t *testing.T) {
 		{
 			name: "valid",
 			args: args{
-				n: &dom.Node{Tag: "p"},
+				n: &html.Node{Tag: "p"},
 				r: css.Rule{Selectors: []css.Selector{{TagName: "a"}, {TagName: "p"}}},
 			},
 			wantRule: css.Rule{Selectors: []css.Selector{{TagName: "a"}, {TagName: "p"}}},
@@ -124,7 +124,7 @@ func Test_matchRule(t *testing.T) {
 		{
 			name: "invalid",
 			args: args{
-				n: &dom.Node{Tag: "p"},
+				n: &html.Node{Tag: "p"},
 				r: css.Rule{Selectors: []css.Selector{{TagName: "a"}, {ID: "bloup"}}},
 			},
 			wantRule: css.Rule{},
@@ -204,7 +204,7 @@ func Test_specifiedValues(t *testing.T) {
 		},
 	}
 	type args struct {
-		n          *dom.Node
+		n          *html.Node
 		stylesheet *css.Stylesheet
 	}
 	tests := []struct {
@@ -226,7 +226,7 @@ func Test_specifiedValues(t *testing.T) {
 		{
 			name: ".first.all",
 			args: args{
-				n:          dom.NodeFirstElementChild(node),
+				n:          html.NodeFirstElementChild(node),
 				stylesheet: style,
 			},
 			want: PropertyMap{
@@ -237,7 +237,7 @@ func Test_specifiedValues(t *testing.T) {
 		{
 			name: "#green-point.last.all",
 			args: args{
-				n:          dom.NodeLastElementChild(node),
+				n:          html.NodeLastElementChild(node),
 				stylesheet: style,
 			},
 			want: PropertyMap{

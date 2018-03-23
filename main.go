@@ -9,9 +9,9 @@ import (
 	"os"
 
 	"github.com/lysrt/bro/css"
-	"github.com/lysrt/bro/dom"
-	"github.com/lysrt/bro/dom/lexer"
-	"github.com/lysrt/bro/dom/parser"
+	"github.com/lysrt/bro/html"
+	"github.com/lysrt/bro/html/lexer"
+	"github.com/lysrt/bro/html/parser"
 	"github.com/lysrt/bro/layout"
 	"github.com/lysrt/bro/paint"
 	"github.com/lysrt/bro/style"
@@ -30,7 +30,7 @@ func main() {
 	flag.Parse()
 
 	var (
-		domNodes   *dom.Node
+		domNodes   *html.Node
 		styleSheet *css.Stylesheet
 	)
 
