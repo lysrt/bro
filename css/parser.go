@@ -261,14 +261,14 @@ func (p *Parser) parseColor() Color {
 	color := Color{}
 	if len(text) == 3 {
 		color.A = 255
-		color.R = hexToUint8(string(text[0]) + string(text[0]))
-		color.G = hexToUint8(string(text[1]) + string(text[1]))
-		color.B = hexToUint8(string(text[2]) + string(text[2]))
+		color.R = hexToInt(string(text[0]) + string(text[0]))
+		color.G = hexToInt(string(text[1]) + string(text[1]))
+		color.B = hexToInt(string(text[2]) + string(text[2]))
 	} else if len(text) == 6 {
 		color.A = 255
-		color.R = hexToUint8(text[0:2])
-		color.G = hexToUint8(text[2:4])
-		color.B = hexToUint8(text[4:6])
+		color.R = hexToInt(text[0:2])
+		color.G = hexToInt(text[2:4])
+		color.B = hexToInt(text[4:6])
 	}
 
 	p.nextToken()
@@ -277,10 +277,11 @@ func (p *Parser) parseColor() Color {
 	return color
 }
 
-func hexToUint8(hex string) uint8 {
+func hexToInt(hex string) int {
 	val, err := strconv.ParseUint(hex, 16, 8)
 	if err != nil {
 		return 0
 	}
-	return uint8(val)
+
+	return int(val)
 }

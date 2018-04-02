@@ -2,8 +2,8 @@ package paint
 
 import (
 	"image"
-	"image/draw"
 
+	"github.com/fogleman/gg"
 	"github.com/lysrt/bro/css"
 	"github.com/lysrt/bro/layout"
 )
@@ -23,9 +23,9 @@ func (c *SolidColor) paint(img *Canvas) {
 	img.SetColor(c.color)
 	x0 := int(c.rect.X)
 	y0 := int(c.rect.Y)
-	x1 := int(c.rect.X + c.rect.Width)
-	y1 := int(c.rect.Y + c.rect.Height)
-	img.Rect(x0, y0, x1, y1)
+	width := int(c.rect.Width)
+	height := int(c.rect.Height)
+	img.Rect(x0, y0, width, height)
 }
 
 func Paint(layoutRoot *layout.LayoutBox) (image.Image, error) {
@@ -33,15 +33,14 @@ func Paint(layoutRoot *layout.LayoutBox) (image.Image, error) {
 
 	width := int(layoutRoot.Dimensions.Content.Width)
 	height := int(layoutRoot.Dimensions.Content.Height)
-	img := image.NewNRGBA(image.Rect(0, 0, width, height))
-	draw.Draw(img, img.Bounds(), image.White, image.ZP, draw.Src)
 
-	canvas := NewCanvas(img)
+	context := gg.NewContext(width, height)
+	canvas := NewCanvas(context)
 	for _, item := range displayList {
-		paintItem(canvas, item)
+		item.paint(canvas)
 	}
 
-	return img, nil
+	return context.Image(), nil
 }
 
 func buildDisplayList(layoutRoot *layout.LayoutBox) DisplayList {
@@ -133,14 +132,5 @@ func getColor(layoutBox *layout.LayoutBox, name string) (color css.Color, ok boo
 		return css.Color{}, false
 	default:
 		panic("Unknown boxType")
-	}
-}
-
-func paintItem(c *Canvas, command DisplayCommand) {
-	switch t := command.(type) {
-	case *SolidColor:
-		t.paint(c)
-	default:
-		panic("Unexpect DisplayCommand type")
 	}
 }

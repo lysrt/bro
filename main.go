@@ -77,7 +77,7 @@ func main() {
 			log.Printf("parsing error: %q\n", e)
 		}
 	}
-	// fmt.Println(style)
+	// fmt.Println(styleSheet)
 
 	//
 	// 3. Decorate the DOM to generate the Style Tree

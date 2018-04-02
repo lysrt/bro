@@ -122,5 +122,5 @@ const (
 
 type Color struct {
 	Name       string
-	A, R, G, B uint8
+	A, R, G, B int
 }
