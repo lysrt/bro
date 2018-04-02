@@ -1,6 +1,8 @@
 package paint
 
 import (
+	"image"
+
 	"github.com/fogleman/gg"
 
 	"github.com/lysrt/bro/css"
@@ -10,8 +12,13 @@ type Canvas struct {
 	context *gg.Context
 }
 
-func NewCanvas(dc *gg.Context) *Canvas {
-	return &Canvas{context: dc}
+func NewCanvas(width, height int) *Canvas {
+	context := gg.NewContext(width, height)
+	return &Canvas{context: context}
+}
+
+func (c *Canvas) Image() image.Image {
+	return c.context.Image()
 }
 
 func (c *Canvas) SetColor(col css.Color) {

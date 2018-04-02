@@ -3,7 +3,6 @@ package paint
 import (
 	"image"
 
-	"github.com/fogleman/gg"
 	"github.com/lysrt/bro/css"
 	"github.com/lysrt/bro/layout"
 )
@@ -34,13 +33,12 @@ func Paint(layoutRoot *layout.LayoutBox) (image.Image, error) {
 	width := int(layoutRoot.Dimensions.Content.Width)
 	height := int(layoutRoot.Dimensions.Content.Height)
 
-	context := gg.NewContext(width, height)
-	canvas := NewCanvas(context)
+	canvas := NewCanvas(width, height)
 	for _, item := range displayList {
 		item.paint(canvas)
 	}
 
-	return context.Image(), nil
+	return canvas.Image(), nil
 }
 
 func buildDisplayList(layoutRoot *layout.LayoutBox) DisplayList {
