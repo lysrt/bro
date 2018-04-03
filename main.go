@@ -83,7 +83,7 @@ func main() {
 	// 3. Decorate the DOM to generate the Style Tree
 	//
 	styleTree := style.GenerateStyleTree(domNodes, styleSheet)
-	//fmt.Println(styleTree)
+	// fmt.Println(styleTree)
 
 	//
 	// 4.1 Build the Layout Tree
@@ -94,8 +94,8 @@ func main() {
 	//
 	// 4.2 Parcour the layout tree to compute boxes dimensions
 	//
-	// Height must be zero here!
-	layoutTree.Layout(layout.Dimensions{Content: layout.Rect{X: 0, Y: 0, Width: 300, Height: 0}})
+	viewport := layout.Dimensions{Content: layout.Rect{Width: 300}}
+	layoutTree.Layout(viewport)
 	// fmt.Println(layoutTree)
 
 	//

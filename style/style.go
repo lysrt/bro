@@ -162,6 +162,9 @@ func matchRule(n *html.Node, rule css.Rule) (m MatchedRule, ok bool) {
 // matchSelector tries to match a DOM node with a CSS selector.
 // There is a match only if all the fields of the selector match.
 func matchSelector(n *html.Node, selector css.Selector) bool {
+	if selector.TagName != "" && selector.TagName == "*" {
+		return true
+	}
 	if selector.TagName != "" && n.Tag != selector.TagName {
 		return false
 	}
