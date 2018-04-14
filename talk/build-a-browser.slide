@@ -106,7 +106,7 @@ louis@gryzzly.io
 
 * The DOM Struct
 
-.code ../dom/node.go /^const \(/,/^}/
+.code ../html/node.go /^const \(/,/^}/
 
 : This is the output of the HTML parser.
 : It is the root of the following tree.
